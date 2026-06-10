@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FinHome</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f2f2f7;--surface:#fff;--border:#e5e5ea;
+  --accent:#007aff;--accent2:#5856d6;--green:#34c759;
+  --yellow:#ff9500;--red:#ff3b30;--teal:#32ade6;
+  --text:#000;--text2:#3c3c43;--text3:#8e8e93;
+  --radius:16px;--radius-sm:12px;
+  --shadow:0 2px 16px rgba(0,0,0,.09);--shadow-sm:0 1px 4px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.screen.active{display:flex;}
+.admin-screen{display:none;min-height:100vh;background:#1c1c1e;padding:60px 20px 40px;}
+.admin-screen.active{display:block;}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.active{display:flex;}
+.modal-sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:500px;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--text3);margin-bottom:20px;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-btn{flex:1;border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:var(--bg);color:var(--text2);}
+.modal-btn.confirm{background:var(--red);color:#fff;}
+.modal-btn.primary{background:var(--accent);color:#fff;}
+
+/* ACTIVATION */
+.act-card{background:var(--surface);border-radius:24px;padding:36px 24px;width:100%;max-width:380px;box-shadow:var(--shadow);text-align:center;}
+.act-logo{width:72px;height:72px;background:linear-gradient(135deg,#007aff,#5856d6);border-radius:18px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 8px 24px rgba(0,122,255,.3);}
+.act-appname{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
+.act-appname span{color:var(--accent);}
+.act-sub{font-size:14px;color:var(--text3);margin-bottom:24px;line-height:1.5;}
+.act-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:16px;color:var(--text);margin-bottom:10px;transition:border-color .2s;}
+.act-input:focus{outline:none;border-color:var(--accent);}
+.act-input.code-input{letter-spacing:3px;font-weight:700;text-align:center;font-size:17px;text-transform:uppercase;}
+.btn-primary{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,122,255,.3);}
+.act-error{background:rgba(255,59,48,.1);color:var(--red);border-radius:10px;padding:10px 14px;font-size:13px;margin-top:10px;display:none;}
+.act-note{font-size:12px;color:var(--text3);margin-top:14px;line-height:1.5;}
+
+/* ONBOARDING */
+.ob-card{background:var(--surface);border-radius:24px;padding:28px 22px;width:100%;max-width:360px;box-shadow:var(--shadow);}
+.ob-icon{font-size:44px;text-align:center;margin-bottom:14px;}
+.ob-title{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:8px;text-align:center;}
+.ob-desc{font-size:14px;color:var(--text3);line-height:1.6;text-align:center;margin-bottom:20px;}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin-bottom:18px;}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .3s;}
+.ob-dot.active{background:var(--accent);width:18px;border-radius:3px;}
+.ob-actions{display:flex;gap:10px;}
+.ob-btn-skip{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;color:var(--text3);}
+.ob-btn-next{flex:2;background:var(--accent);border:none;border-radius:12px;padding:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:#fff;}
+
+/* LANG BTN */
+.lang-toggle{position:fixed;top:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;z-index:999;box-shadow:var(--shadow-sm);color:var(--accent);}
+
+/* ===== HEADER ===== */
+.header{background:rgba(255,255,255,.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid var(--border);position:sticky;top:0;z-index:100;}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;padding-top:max(14px,env(safe-area-inset-top));}
+.header-brand{display:flex;align-items:center;gap:8px;}
+.header-brand-icon{width:30px;height:30px;background:linear-gradient(135deg,#007aff,#5856d6);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.header-brand-name{font-size:18px;font-weight:800;letter-spacing:-.5px;}
+.header-brand-name span{color:var(--accent);}
+.header-top-actions{display:flex;align-items:center;gap:6px;}
+.hbtn-icon{background:none;border:none;border-radius:8px;padding:5px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text3);transition:background .15s;flex-shrink:0;}
+.hbtn-icon:active{background:rgba(0,0,0,.06);}
+.hbtn-icon.danger{color:var(--red);}
+.hbtn-icon .btn-lbl{font-size:9px;font-weight:500;white-space:nowrap;}
+.hbtn-members{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;padding:8px 14px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#fff;font-family:inherit;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,122,255,.25);}
+.hbtn-members .count{background:rgba(255,255,255,.25);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;}
+
+.header-bottom{padding:4px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.header-user-email{font-size:11px;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;}
+.header-sub{font-size:11px;color:var(--text3);}
+.header-actions-row{display:flex;align-items:center;gap:4px;}
+
+/* TABS */
+.tabs-wrap{padding:0 16px 10px;}
+.tabs{background:rgba(118,118,128,.12);border-radius:10px;padding:2px;display:flex;}
+.tab-btn{flex:1;padding:7px 2px;border-radius:8px;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.tab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+
+/* MEMBERS PANEL */
+.members-panel{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:500px;animation:slideUp .3s ease;}
+.member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:.5px solid var(--border);}
+.member-row:last-child{border-bottom:none;}
+.member-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0;}
+.member-name-input{flex:1;border:none;background:transparent;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);padding:4px 0;}
+.member-name-input:focus{outline:none;border-bottom:1.5px solid var(--accent);}
+.member-income-badge{font-size:12px;color:var(--text3);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.add-member-row{display:flex;gap:8px;margin-top:14px;}
+.add-member-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:inherit;font-size:15px;color:var(--text);}
+.add-member-input:focus{outline:none;border-color:var(--accent);}
+.add-member-btn{background:var(--accent);border:none;border-radius:10px;padding:11px 16px;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+/* MAIN */
+.main{padding:12px 16px 80px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.sec-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px 4px;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.kpi{background:var(--surface);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow-sm);}
+.kpi-label{font-size:11px;color:var(--text3);font-weight:500;margin-bottom:4px;}
+.kpi-value{font-size:21px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.kpi-value.accent{color:var(--accent);}
+.kpi-value.green{color:var(--green);}
+.kpi-value.red{color:var(--red);}
+.kpi-value.yellow{color:var(--yellow);}
+.kpi-value.purple{color:var(--accent2);}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* PROJECTION */
+.proj-card{background:linear-gradient(135deg,#007aff,#5856d6);border-radius:var(--radius);padding:16px;color:#fff;box-shadow:var(--shadow);}
+.proj-title{font-size:11px;font-weight:600;opacity:.8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px;}
+.proj-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.proj-item{text-align:center;}
+.proj-val{font-size:17px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.proj-lbl{font-size:10px;opacity:.75;margin-top:1px;}
+.proj-slider-wrap{margin-top:12px;}
+.proj-slider-label{font-size:11px;opacity:.8;margin-bottom:5px;display:flex;justify-content:space-between;}
+.proj-slider{width:100%;height:4px;-webkit-appearance:none;background:rgba(255,255,255,.3);border-radius:4px;outline:none;}
+.proj-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2);}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+.card-header{padding:13px 16px 10px;border-bottom:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:15px;font-weight:600;}
+.card-total{font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;}
+
+/* ROWS */
+.row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:.5px solid var(--border);}
+.row:last-of-type{border-bottom:none;}
+.row-name{flex:1;font-size:14px;}
+.row-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;flex-shrink:0;}
+.row-tag.temp{background:rgba(255,149,0,.12);color:#a05800;}
+.row-tag.savings{background:rgba(52,199,89,.12);color:#1a7a32;}
+.row-person{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;background:rgba(0,122,255,.1);color:var(--accent);flex-shrink:0;}
+.row-months{background:rgba(118,118,128,.1);border:none;border-radius:6px;padding:5px 6px;font-family:inherit;font-size:12px;width:44px;text-align:center;color:var(--yellow);}
+.row-months:focus{outline:2px solid var(--yellow);outline-offset:-2px;}
+.row-input{background:rgba(118,118,128,.1);border:none;border-radius:8px;padding:6px 8px;color:var(--text);font-family:inherit;font-size:14px;font-weight:500;width:78px;text-align:right;font-variant-numeric:tabular-nums;}
+.row-input:focus{outline:2px solid var(--accent);outline-offset:-2px;background:rgba(0,122,255,.06);}
+.btn-del{background:rgba(255,59,48,.1);border:none;color:var(--red);cursor:pointer;font-size:13px;font-weight:600;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* INCOME CARD */
+.income-card{background:var(--surface);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+.income-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.income-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.income-name{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;}
+.income-val{background:rgba(118,118,128,.1);border:none;border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:19px;font-weight:700;width:100%;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.income-val:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.income-sub{font-size:11px;color:var(--text3);margin-top:5px;}
+
+/* ADD FORM */
+.add-form{display:flex;gap:6px;padding:10px 12px;border-top:.5px solid var(--border);background:rgba(0,0,0,.02);flex-wrap:wrap;}
+.add-form input,.add-form select{background:rgba(118,118,128,.1);border:none;border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:13px;}
+.add-form input{flex:1;min-width:80px;}
+.add-form input.amt{width:68px;flex:none;text-align:right;font-variant-numeric:tabular-nums;}
+.add-form input:focus,.add-form select:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.btn-plus{background:var(--accent);border:none;border-radius:8px;padding:8px 14px;color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+/* PASSIVE ROW */
+.passive-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:.5px solid var(--border);}
+.passive-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+
+/* CHARTS */
+.chart-card{background:var(--surface);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+.chart-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;}
+.chart-wrap{position:relative;height:180px;}
+
+/* METHOD */
+.method-card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+.m-row{margin-bottom:16px;}
+.m-row:last-child{margin-bottom:0;}
+.m-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.m-name{font-size:14px;font-weight:600;}
+.m-vals{font-size:12px;color:var(--text3);font-variant-numeric:tabular-nums;}
+.m-bar-bg{height:8px;background:var(--bg);border-radius:8px;overflow:hidden;}
+.m-bar-fill{height:100%;border-radius:8px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.m-note{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* TIPS */
+.tip-card{border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;}
+.tip-card.ok{background:rgba(52,199,89,.09);}
+.tip-card.warn{background:rgba(255,149,0,.09);}
+.tip-card.info{background:rgba(0,122,255,.07);}
+.tip-card.danger{background:rgba(255,59,48,.08);}
+.tip-icon{font-size:17px;flex-shrink:0;}
+.tip-title{font-size:13px;font-weight:600;}
+
+/* ALERT */
+.alert{border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;font-size:13px;line-height:1.5;display:flex;gap:10px;align-items:flex-start;}
+.alert-icon{font-size:16px;flex-shrink:0;}
+.alert.ok{background:rgba(52,199,89,.09);}
+.alert.warn{background:rgba(255,149,0,.09);}
+.alert.danger{background:rgba(255,59,48,.08);}
+.alert.info{background:rgba(0,122,255,.07);}
+
+/* VIA */
+.via-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:.5px solid var(--border);}
+.via-row:last-child{border-bottom:none;}
+.via-label{font-size:14px;}
+.via-val{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;}
+
+/* SCORE */
+.score-wrap{padding:10px 16px 8px;}
+.score-card{background:var(--surface);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);}
+.score-ring{width:64px;height:64px;flex-shrink:0;position:relative;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-ring-num{font-size:19px;font-weight:700;line-height:1;letter-spacing:-.5px;}
+.score-ring-label{font-size:8px;color:var(--text3);font-weight:500;margin-top:1px;letter-spacing:.5px;}
+.score-info{flex:1;}
+.score-title{font-size:15px;font-weight:600;margin-bottom:2px;}
+.score-desc{font-size:12px;color:var(--text3);line-height:1.4;}
+.score-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.badge{font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;}
+.badge.ok{background:rgba(52,199,89,.12);color:#1a7a32;}
+.badge.warn{background:rgba(255,149,0,.12);color:#a05800;}
+.badge.danger{background:rgba(255,59,48,.12);color:#c0160f;}
+
+/* ADMIN */
+.admin-inner{max-width:420px;width:100%;margin:0 auto;}
+.admin-title{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;}
+.admin-sub{font-size:13px;color:#8e8e93;margin-bottom:20px;}
+.admin-card{background:#2c2c2e;border-radius:16px;padding:16px;margin-bottom:12px;}
+.admin-label{font-size:11px;color:#8e8e93;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.admin-code-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:.5px solid #3a3a3c;font-family:'SF Mono',monospace;font-size:13px;color:#fff;}
+.admin-code-row:last-child{border-bottom:none;}
+.admin-code-status{font-size:10px;padding:2px 8px;border-radius:20px;flex-shrink:0;}
+.admin-code-status.avail{background:rgba(52,199,89,.2);color:#34c759;}
+.admin-code-status.used{background:rgba(255,149,0,.2);color:#ff9500;}
+.admin-code-status.full{background:rgba(255,59,48,.2);color:#ff3b30;}
+.admin-textarea{width:100%;background:#3a3a3c;border:none;border-radius:10px;padding:12px;color:#fff;font-family:'SF Mono','Courier New',monospace;font-size:13px;line-height:1.6;resize:vertical;min-height:90px;}
+.admin-textarea:focus{outline:2px solid #007aff;outline-offset:-2px;}
+.admin-btn{background:#007aff;border:none;border-radius:10px;padding:11px 20px;color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;width:100%;}
+.admin-btn.ghost{background:#3a3a3c;}
+.footer-admin{text-align:center;padding:16px;font-size:11px;color:var(--text3);}
+.footer-admin span{cursor:pointer;}
+/* CASA PANEL */
+.casa-sub-tabs{display:flex;background:rgba(118,118,128,.1);border-radius:9px;padding:2px;margin-bottom:12px;}
+.casa-sub-btn{flex:1;padding:6px 2px;border-radius:7px;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:10px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.casa-sub-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.casa-panel{display:none;}
+.casa-panel.active{display:block;}
+.result-hero{background:linear-gradient(135deg,#007aff,#5856d6);border-radius:var(--radius);padding:18px;color:#fff;box-shadow:var(--shadow);margin-bottom:10px;text-align:center;}
+.result-hero-label{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.result-hero-val{font-size:40px;font-weight:800;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;}
+.result-hero-sub{font-size:12px;opacity:.8;margin-top:3px;}
+.input-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+.input-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:.5px solid var(--border);}
+.input-row:last-child{border-bottom:none;}
+.input-label-wrap{flex:1;}
+.input-label{font-size:14px;color:var(--text);}
+.input-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.field-input{background:rgba(118,118,128,.1);border:none;border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:14px;font-weight:600;width:100px;text-align:right;font-variant-numeric:tabular-nums;}
+.field-input:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.field-unit{font-size:13px;color:var(--text3);flex-shrink:0;width:18px;}
+.segment{display:flex;background:rgba(118,118,128,.1);border-radius:8px;padding:2px;}
+.seg-btn{flex:1;padding:6px 8px;border-radius:6px;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.seg-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.calc-derived{font-size:12px;color:var(--accent);font-weight:600;margin-top:2px;}
+.table-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+.amort-head{display:grid;grid-template-columns:36px 1fr 1fr 1fr 1fr;padding:9px 12px;background:var(--bg);border-bottom:.5px solid var(--border);}
+.amort-head span{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;text-align:right;}
+.amort-head span:first-child{text-align:left;}
+.amort-row{display:grid;grid-template-columns:36px 1fr 1fr 1fr 1fr;padding:8px 12px;border-bottom:.5px solid var(--border);font-size:11px;font-variant-numeric:tabular-nums;}
+.amort-row:last-child{border-bottom:none;}
+.amort-row span{text-align:right;color:var(--text2);}
+.amort-row span:first-child{text-align:left;color:var(--text3);}
+.amort-row .ap{color:var(--green);}
+.amort-row .ai{color:var(--red);}
+.amort-row.hl{background:rgba(0,122,255,.04);}
+.verdict-card{border-radius:var(--radius-sm);padding:14px 15px;margin-bottom:8px;}
+.verdict-card.ok{background:rgba(52,199,89,.09);}
+.verdict-card.warn{background:rgba(255,149,0,.09);}
+.verdict-card.danger{background:rgba(255,59,48,.08);}
+.verdict-card.info{background:rgba(0,122,255,.07);}
+.verdict-title{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.verdict-desc{font-size:12px;color:var(--text2);line-height:1.6;}
+.search-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+.search-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:.5px solid var(--border);text-decoration:none;cursor:pointer;transition:background .15s;}
+.search-link:last-child{border-bottom:none;}
+.search-link:active{background:var(--bg);}
+.search-icon-box{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.search-info{flex:1;}
+.search-title{font-size:13px;font-weight:600;color:var(--text);}
+.search-desc{font-size:11px;color:var(--text3);margin-top:1px;}
+.zone-wrap{padding:12px 14px;border-bottom:.5px solid var(--border);background:rgba(0,0,0,.02);}
+.zone-field{width:100%;background:rgba(118,118,128,.1);border:none;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);}
+.zone-field:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.zone-hint{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;}
+.report-sect{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+.report-sect-head{padding:12px 16px;border-bottom:.5px solid var(--border);background:var(--bg);font-size:13px;font-weight:700;}
+.report-rrow{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:.5px solid var(--border);}
+.report-rrow:last-child{border-bottom:none;}
+.report-rlabel{font-size:13px;color:var(--text2);}
+.report-rval{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;}
+.score-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:10px;}
+.score-pill.ok{background:rgba(52,199,89,.12);color:#1a7a32;}
+.score-pill.warn{background:rgba(255,149,0,.12);color:#a05800;}
+.score-pill.danger{background:rgba(255,59,48,.12);color:#c0160f;}
+.casa-calc-btn{width:100%;background:var(--accent);border:none;border-radius:12px;padding:14px;color:#fff;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;box-shadow:0 4px 12px rgba(0,122,255,.25);}
+
+
+/* DEBT BREAKDOWN */
+.debt-wrap{border-bottom:.5px solid var(--border);}
+.debt-wrap:last-child{border-bottom:none;}
+.debt-breakdown{display:flex;align-items:center;gap:6px;padding:6px 14px 10px;flex-wrap:wrap;}
+.debt-label{font-size:11px;color:var(--text3);}
+.debt-arrow{font-size:11px;color:var(--text3);}
+.debt-chip{font-size:12px;font-weight:600;color:var(--accent);background:rgba(0,122,255,.08);padding:3px 9px;border-radius:20px;font-variant-numeric:tabular-nums;}
+.debt-chip.sec{font-size:11px;color:var(--text3);background:rgba(0,0,0,.05);font-weight:500;}
+.debt-months-btn{font-size:11px;color:var(--yellow);background:rgba(255,149,0,.1);border:none;border-radius:20px;padding:3px 9px;cursor:pointer;font-family:inherit;font-weight:500;margin-left:auto;}
+.debt-months-btn:active{opacity:.7;}
+.proj-sim-note{font-size:10px;opacity:.65;margin-top:8px;text-align:center;font-style:italic;}
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
+
+<!-- ACTIVATION -->
+<div class="screen active" id="screenActivation">
+  <div class="act-card">
+    <div class="act-logo">🏠</div>
+    <div class="act-appname">Fin<span>Home</span></div>
+    <div class="act-sub">Ingresa tu correo y el código de activación que recibiste.</div>
+    <input class="act-input" id="actEmail" type="email" placeholder="tucorreo@email.com">
+    <input class="act-input code-input" id="actCode" type="text" placeholder="FHXX-XXXX-XXXX" maxlength="14" oninput="formatCode(this)">
+    <button class="btn-primary" onclick="activate()">Activar</button>
+    <div class="act-error" id="actError">Código inválido o ya utilizado en 2 dispositivos.</div>
+    <div class="act-note">El código activa hasta 2 dispositivos. Guárdalo en un lugar seguro.</div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="screen" id="screenOnboarding">
+  <div class="ob-card">
+    <div class="ob-dots" id="obDots"></div>
+    <div id="obSteps"></div>
+    <div class="ob-actions">
+      <button class="ob-btn-skip" onclick="finishOnboarding()">Omitir</button>
+      <button class="ob-btn-next" id="obNextBtn" onclick="obNext()">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOUT MODAL -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">¿Cerrar sesión?</div>
+    <div class="modal-sub">Tus datos quedarán guardados en este dispositivo. Podrás volver a entrar con tu correo y código.</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('logoutModal')">Cancelar</button>
+      <button class="modal-btn confirm" onclick="confirmLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MONTHS MODAL -->
+<div class="modal-overlay" id="monthsModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="monthsModalTitle">Meses para liquidar</div>
+    <div class="modal-sub" id="monthsModalSub">Ajusta cuántos meses tienes para pagar esta deuda.</div>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;">
+      <button onclick="adjustMonths(-1)" style="width:44px;height:44px;border-radius:50%;background:var(--bg);border:1px solid var(--border);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+      <div style="flex:1;text-align:center;">
+        <div id="monthsModalVal" style="font-size:40px;font-weight:700;letter-spacing:-1px;color:var(--accent);">3</div>
+        <div style="font-size:12px;color:var(--text3);">meses</div>
+      </div>
+      <button onclick="adjustMonths(1)" style="width:44px;height:44px;border-radius:50%;background:var(--bg);border:1px solid var(--border);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+    </div>
+    <div id="monthsModalCalc" style="background:rgba(0,122,255,.07);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center;font-size:13px;color:var(--text2);line-height:1.7;"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('monthsModal')">Cancelar</button>
+      <button class="modal-btn primary" onclick="confirmMonths()">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBERS MODAL -->
+<div class="modal-overlay" id="membersModal">
+  <div class="members-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Integrantes del hogar</div>
+    <div class="modal-sub">Sus salarios aparecerán en la sección Ingresos.</div>
+    <div id="membersList"></div>
+    <div class="add-member-row">
+      <input class="add-member-input" id="newMemberName" placeholder="Nombre del integrante...">
+      <button class="add-member-btn" onclick="addMember()">+ Agregar</button>
+    </div>
+    <div style="margin-top:14px;">
+      <button class="modal-btn primary" onclick="closeModal('membersModal');saveData();recalculate(false);">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="screenApp">
+
+  <!-- HEADER -->
+  <div class="header">
+    <!-- ROW 1: Brand + action buttons -->
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="header-brand-icon">🏠</div>
+        <div class="header-brand-name">Fin<span>Home</span></div>
+      </div>
+      <div class="header-actions-row">
+        <button class="hbtn-icon" onclick="exportData()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span class="btn-lbl">Exportar</span>
+        </button>
+        <button class="hbtn-icon" onclick="document.getElementById('importFile').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 16 12 21 17 16"/><line x1="12" y1="21" x2="12" y2="9"/></svg>
+          <span class="btn-lbl">Importar</span>
+        </button>
+        <button class="hbtn-icon danger" onclick="openModal('logoutModal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span class="btn-lbl">Salir</span>
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+    </div>
+    <!-- ROW 2: Integrantes button full width + email -->
+    <div class="header-bottom">
+      <button class="hbtn-members" onclick="openMembers()" style="flex:1;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Integrantes
+        <span class="count" id="memberCount">0</span>
+      </button>
+      <div class="header-user-email" id="toolbarEmail"></div>
+    </div>
+    <div class="tabs-wrap">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('resumen',this)">Resumen</button>
+        <button class="tab-btn" onclick="showTab('ingresos',this)">Ingresos</button>
+        <button class="tab-btn" onclick="showTab('gastos',this)">Gastos</button>
+        <button class="tab-btn" onclick="showTab('ahorros',this)">Ahorros</button>
+        <button class="tab-btn" onclick="showTab('metodo',this)">50/30/20</button>
+        <button class="tab-btn" onclick="showTab('casa',this)">🏡 Casa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORE -->
+  <div class="score-wrap">
+    <div class="score-card">
+      <div class="score-ring">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#e5e5ea" stroke-width="6"/>
+          <circle id="scoreArc" cx="32" cy="32" r="26" fill="none" stroke="#34c759" stroke-width="6"
+            stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"
+            style="transition:stroke-dashoffset .6s ease,stroke .4s ease"/>
+        </svg>
+        <div class="score-ring-text">
+          <span class="score-ring-num" id="scoreNum" style="color:#34c759">—</span>
+          <span class="score-ring-label">SCORE</span>
+        </div>
+      </div>
+      <div class="score-info">
+        <div class="score-title" id="scoreTitle">—</div>
+        <div class="score-desc" id="scoreDesc">—</div>
+        <div class="score-badges" id="scoreBadges"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- RESUMEN -->
+    <div class="panel active" id="panel-resumen">
+      <div class="sec-label">Panorama general</div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="sec-label">Proyección de deudas</div>
+      <div class="proj-card">
+        <div class="proj-title">Proyección automática (meses reales de cada deuda)</div>
+        <div class="proj-grid">
+          <div class="proj-item"><div class="proj-val" id="projNow">—</div><div class="proj-lbl">Hoy</div></div>
+          <div class="proj-item"><div class="proj-val" id="projFree">—</div><div class="proj-lbl">Se libera</div></div>
+          <div class="proj-item"><div class="proj-val" id="projAfter">—</div><div class="proj-lbl" id="projAfterLbl">Futuro</div></div>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,.2);margin-top:14px;padding-top:12px;">
+          <div class="proj-title" style="margin-bottom:8px;">Simulación manual ↕</div>
+          <div class="proj-slider-label" style="font-size:11px;opacity:.8;margin-bottom:5px;display:flex;justify-content:space-between;"><span>Meses hipotéticos</span><span id="projMonthsLabel">3</span></div>
+          <input type="range" class="proj-slider" id="projMonths" min="1" max="24" value="3">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:10px;opacity:.7;margin-bottom:3px;">Pago/mes por deuda</div>
+              <div id="projSimPayment" style="font-size:16px;font-weight:700;">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:10px;opacity:.7;margin-bottom:3px;">Sobrante después</div>
+              <div id="projSim" style="font-size:16px;font-weight:700;">—</div>
+            </div>
+          </div>
+          <div class="proj-sim-note">Simulación — no modifica los meses reales de cada deuda</div>
+        </div>
+      </div>
+      <div class="sec-label">Distribución</div>
+      <div class="chart-card"><div class="chart-title">Composición del presupuesto</div><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Real vs Meta 50/30/20</div><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
+      <div class="sec-label">Alertas</div>
+      <div id="alertsContainer"></div>
+    </div>
+
+    <!-- INGRESOS -->
+    <div class="panel" id="panel-ingresos">
+      <div class="sec-label">Salarios semanales</div>
+      <div id="incomeCards"></div>
+      <div class="sec-label">Ingresos pasivos</div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Fuentes adicionales</span><span class="card-total" id="total-pasivos">$0</span></div>
+        <div id="list-pasivos"></div>
+        <div class="add-form">
+          <input id="passiveName" placeholder="Fuente de ingreso...">
+          <input id="passiveAmt" type="number" class="amt" placeholder="$0">
+          <button class="btn-plus" onclick="addPassive()">+</button>
+        </div>
+      </div>
+      <div class="alert info"><div class="alert-icon">💡</div><div>Los ahorros en cuenta de alto rendimiento generan interés mensual. Mantenlos intocables.</div></div>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="panel" id="panel-gastos">
+      <div class="sec-label">Necesidades — 50%</div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Vivienda & esenciales</span><span class="card-total" id="total-necesidades">$0</span></div>
+        <div id="list-necesidades"></div>
+        <div class="add-form">
+          <input id="name-necesidades" placeholder="Gasto...">
+          <input id="amt-necesidades" type="number" class="amt" placeholder="$0">
+          <select id="person-necesidades" style="max-width:90px;font-size:12px;"></select>
+          <select id="tag-necesidades"><option value="">fijo</option><option value="temp">temporal</option></select>
+          <button class="btn-plus" onclick="addExpense('necesidades')">+</button>
+        </div>
+      </div>
+      <div class="sec-label">Deseos — 30%</div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Gastos personales</span><span class="card-total" id="total-deseos">$0</span></div>
+        <div id="list-deseos"></div>
+        <div class="add-form">
+          <input id="name-deseos" placeholder="Gasto...">
+          <input id="amt-deseos" type="number" class="amt" placeholder="$0">
+          <select id="person-deseos" style="max-width:90px;font-size:12px;"></select>
+          <select id="tag-deseos"><option value="">variable</option><option value="temp">temporal</option></select>
+          <button class="btn-plus" onclick="addExpense('deseos')">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AHORROS -->
+    <div class="panel" id="panel-ahorros">
+      <div class="sec-label">Inversiones & Ahorros — 20%</div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Aportaciones mensuales</span><span class="card-total" id="total-ahorros">$0</span></div>
+        <div id="list-ahorros"></div>
+        <div class="add-form">
+          <input id="name-ahorros" placeholder="Inversión / Ahorro...">
+          <input id="amt-ahorros" type="number" class="amt" placeholder="$0">
+          <select id="person-ahorros" style="max-width:90px;font-size:12px;"></select>
+          <select id="tag-ahorros"><option value="savings">inversión</option><option value="">ahorro</option></select>
+          <button class="btn-plus" onclick="addExpense('ahorros')">+</button>
+        </div>
+      </div>
+      <div class="alert info"><div class="alert-icon">🏦</div><div>Fondo de emergencia: mantén 3-6 meses de gastos en una cuenta separada e intocable.</div></div>
+    </div>
+
+    <!-- MÉTODO -->
+    <div class="panel" id="panel-metodo">
+      <div class="sec-label">Método 50/30/20</div>
+      <div class="method-card" id="methodCard"></div>
+      <div class="sec-label">Tips personalizados</div>
+      <div id="tipsContainer"></div>
+      <div class="sec-label">Viabilidad de la casa</div>
+      <div class="card" id="viabilityCard"></div>
+    </div>
+
+
+    <!-- CASA -->
+    <div class="panel" id="panel-casa">
+      <div class="casa-sub-tabs">
+        <button class="casa-sub-btn active" onclick="showCasaTab('cdatos',this)">Datos</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('cresultado',this)">Resultado</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('camort',this)">Amort.</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('cbuscar',this)">Buscar</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('creporte',this)">Reporte</button>
+      </div>
+
+      <!-- DATOS -->
+      <div class="casa-panel active" id="panel-cdatos">
+        <div class="sec-label">Precio y financiamiento</div>
+        <div class="input-card">
+          <div class="input-row">
+            <div class="input-label-wrap"><div class="input-label">Precio de la casa</div><div class="input-sub">Precio de lista</div></div>
+            <input class="field-input" type="number" id="c_precio" value="280000" oninput="casaRecalc()">
+            <span class="field-unit">$</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label-wrap"><div class="input-label">Enganche</div><div class="input-sub">Down payment %</div></div>
+            <input class="field-input" type="number" id="c_enganche" value="10" oninput="casaRecalc()">
+            <span class="field-unit">%</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label-wrap"><div class="input-label">Tasa de interés</div><div class="input-sub">APR anual — búscala en Buscar</div></div>
+            <input class="field-input" type="number" id="c_tasa" value="6.8" step="0.1" oninput="casaRecalc()">
+            <span class="field-unit">%</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label-wrap"><div class="input-label">Plazo</div></div>
+            <div class="segment">
+              <button class="seg-btn" onclick="setCasaPlazo(15,this)">15 años</button>
+              <button class="seg-btn active" onclick="setCasaPlazo(30,this)">30 años</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-label">Costos adicionales (% anual del valor)</div>
+        <div class="input-card">
+          <div class="input-row">
+            <div class="input-label-wrap">
+              <div class="input-label">Property Tax</div>
+              <div class="input-sub">% anual — búscalo en Buscar</div>
+              <div class="calc-derived" id="c_tax_calc">= $0/mes</div>
+            </div>
+            <input class="field-input" type="number" id="c_tax" value="2.1" step="0.1" oninput="casaRecalc()">
+            <span class="field-unit">%</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label-wrap">
+              <div class="input-label">Seguro de casa</div>
+              <div class="input-sub">% anual — promedio 0.5–1%</div>
+              <div class="calc-derived" id="c_seguro_calc">= $0/mes</div>
+            </div>
+            <input class="field-input" type="number" id="c_seguro" value="0.5" step="0.1" oninput="casaRecalc()">
+            <span class="field-unit">%</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label-wrap">
+              <div class="input-label">PMI</div>
+              <div class="input-sub">% del préstamo — si enganche &lt;20%</div>
+              <div class="calc-derived" id="c_pmi_calc">= $0/mes</div>
+            </div>
+            <input class="field-input" type="number" id="c_pmi" value="0.5" step="0.1" oninput="casaRecalc()">
+            <span class="field-unit">%</span>
+          </div>
+          <div class="input-row">
+            <div class="input-label-wrap">
+              <div class="input-label">Mantenimiento</div>
+              <div class="input-sub">% anual — promedio 1%</div>
+              <div class="calc-derived" id="c_mant_calc">= $0/mes</div>
+            </div>
+            <input class="field-input" type="number" id="c_mant" value="1.0" step="0.1" oninput="casaRecalc()">
+            <span class="field-unit">%</span>
+          </div>
+        </div>
+
+        <div class="sec-label">Monto fijo mensual</div>
+        <div class="input-card">
+          <div class="input-row">
+            <div class="input-label-wrap"><div class="input-label">HOA</div><div class="input-sub">Monto fijo mensual (si aplica)</div></div>
+            <input class="field-input" type="number" id="c_hoa" value="0" oninput="casaRecalc()">
+            <span class="field-unit">$</span>
+          </div>
+        </div>
+
+        <div class="sec-label">Pago extra mensual (opcional)</div>
+        <div class="input-card">
+          <div class="input-row">
+            <div class="input-label-wrap"><div class="input-label">Pago extra</div><div class="input-sub">Reduce años y ahorra en intereses</div></div>
+            <input class="field-input" type="number" id="c_extra" value="0" oninput="casaRecalc()">
+            <span class="field-unit">$</span>
+          </div>
+        </div>
+
+        <button class="casa-calc-btn" onclick="showCasaTab('cresultado',document.querySelectorAll('.casa-sub-btn')[1])">Ver análisis completo →</button>
+
+        <div class="verdict-card info" style="margin-top:10px;">
+          <div class="verdict-title">⚠️ Aviso importante</div>
+          <div class="verdict-desc">Este análisis es una estimación basada en datos públicos. Los valores reales pueden variar según tu lender, historial crediticio y condiciones del mercado al momento de la compra.</div>
+        </div>
+      </div>
+
+      <!-- RESULTADO -->
+      <div class="casa-panel" id="panel-cresultado">
+        <div class="result-hero">
+          <div class="result-hero-label">Pago mensual total (PITI)</div>
+          <div class="result-hero-val" id="c_piti">$—</div>
+          <div class="result-hero-sub" id="c_piti_sub">Principal + Interés + Impuestos + Seguro</div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Principal + Interés</div><div class="kpi-value accent" id="c_pi">—</div><div class="kpi-sub">Pago base hipoteca</div></div>
+          <div class="kpi"><div class="kpi-label">Total intereses</div><div class="kpi-value red" id="c_totalint">—</div><div class="kpi-sub">En todo el plazo</div></div>
+          <div class="kpi"><div class="kpi-label">Costo real/mes</div><div class="kpi-value" id="c_costoreal">—</div><div class="kpi-sub">Todos los gastos</div></div>
+          <div class="kpi"><div class="kpi-label">% del ingreso</div><div class="kpi-value" id="c_pct">—</div><div class="kpi-sub">Meta: &lt;28%</div></div>
+          <div class="kpi"><div class="kpi-label">Enganche $</div><div class="kpi-value green" id="c_engmonto">—</div><div class="kpi-sub">Down payment</div></div>
+          <div class="kpi"><div class="kpi-label">Total pagado</div><div class="kpi-value" id="c_totalpag">—</div><div class="kpi-sub">En '+plazo+' años</div></div>
+        </div>
+        <div class="sec-label">Diagnóstico</div>
+        <div id="c_diagnostico"></div>
+        <div class="sec-label">Con pago extra</div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Terminas en</div><div class="kpi-value green" id="c_anosextra">—</div><div class="kpi-sub">Con pago extra</div></div>
+          <div class="kpi"><div class="kpi-label">Ahorras en intereses</div><div class="kpi-value green" id="c_ahorroextra">—</div><div class="kpi-sub">vs sin pago extra</div></div>
+        </div>
+      </div>
+
+      <!-- AMORTIZACIÓN -->
+      <div class="casa-panel" id="panel-camort">
+        <div class="sec-label">Tabla de amortización anual</div>
+        <div class="table-card">
+          <div class="amort-head">
+            <span>Año</span><span>Pago</span><span>Principal</span><span>Interés</span><span>Balance</span>
+          </div>
+          <div id="c_amortTable"></div>
+        </div>
+      </div>
+
+      <!-- BUSCAR -->
+      <div class="casa-panel" id="panel-cbuscar">
+        <div class="sec-label">Tu zona de búsqueda</div>
+        <div class="search-card">
+          <div class="zone-wrap">
+            <input class="zone-field" id="c_zona" placeholder="Ej: Hometown, Illinois" oninput="updateCasaLinks()">
+            <div class="zone-hint">💡 Escribe tu ciudad → da click al link → copia el dato → pégalo en la pestaña Datos.</div>
+          </div>
+        </div>
+        <div class="sec-label">Búsquedas inteligentes</div>
+        <div class="search-card" id="c_searchLinks"></div>
+        <div class="verdict-card info" style="margin-top:10px;">
+          <div class="verdict-title">📋 ¿Cómo usar?</div>
+          <div class="verdict-desc">1. Escribe tu zona arriba<br>2. Da click → abre Google con la búsqueda exacta<br>3. Copia el número que encuentres<br>4. Pégalo en la pestaña <strong>Datos</strong><br>5. El análisis se actualiza automáticamente</div>
+        </div>
+      </div>
+
+      <!-- REPORTE -->
+      <div class="casa-panel" id="panel-creporte">
+        <div class="sec-label">Reporte completo de compra</div>
+        <div id="c_reporte"></div>
+      </div>
+
+    </div>
+
+  </div>
+  <div class="footer-admin"><span onclick="tryAdmin()">· · ·</span></div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin-screen" id="screenAdmin">
+  <div class="admin-inner">
+    <div class="admin-title">⚙️ Panel Admin</div>
+    <div class="admin-sub">Gestión de códigos de activación.</div>
+    <div class="admin-card">
+      <div class="admin-label">Estado de códigos</div>
+      <div id="adminCodeList"></div>
+    </div>
+    <div class="admin-card">
+      <div class="admin-label">Editar códigos (uno por línea)</div>
+      <textarea class="admin-textarea" id="adminCodes"></textarea>
+      <button class="admin-btn" onclick="saveAdminCodes()">Guardar</button>
+    </div>
+    <div class="admin-card">
+      <div class="admin-label">Reiniciar código</div>
+      <input class="admin-textarea" id="resetCode" placeholder="FH01-A1B2-C3D4" style="min-height:auto;padding:10px 12px;display:block;width:100%;margin-bottom:8px;">
+      <button class="admin-btn" onclick="resetCode()">Reiniciar</button>
+    </div>
+    <button class="admin-btn ghost" onclick="exitAdmin()" style="margin-top:8px;">← Volver</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ZONA DE CÓDIGOS — EDITAR AQUÍ
+// ============================================================
+var CODIGOS_VALIDOS=["FH01-A1B2-C3D4","FH02-E5F6-G7H8","FH03-I9J0-K1L2","FH04-M3N4-O5P6","FH05-Q7R8-S9T0","FH06-U1V2-W3X4","FH07-Y5Z6-A7B8","FH08-C9D0-E1F2","FH09-G3H4-I5J6","FH10-K7L8-M9N0"];
+var ADMIN_PASSWORD="admin2026finhome";
+// ============================================================
+
+var lang=localStorage.getItem('fh_lang')||'es';
+function toggleLang(){lang=lang==='es'?'en':'es';localStorage.setItem('fh_lang',lang);document.getElementById('langBtn').textContent=lang==='es'?'EN':'ES';}
+
+// ---- MODALS ----
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('active');
+});
+
+// ---- LOGOUT ----
+function confirmLogout(){localStorage.removeItem('fh_session');closeModal('logoutModal');showScreen('screenActivation');}
+
+// ---- DEVICE / SESSION ----
+function getDeviceId(){var id=localStorage.getItem('fh_device_id');if(!id){id='DEV-'+Math.random().toString(36).substr(2,9).toUpperCase();localStorage.setItem('fh_device_id',id);}return id;}
+function emailKey(e){return e.replace(/[^a-z0-9]/g,'_');}
+function getRegistry(){return JSON.parse(localStorage.getItem('fh_codes')||'{}');}
+function saveRegistry(r){localStorage.setItem('fh_codes',JSON.stringify(r));}
+function getValidCodes(){try{var s=localStorage.getItem('fh_valid_codes');if(s)return JSON.parse(s);}catch(e){}return CODIGOS_VALIDOS;}
+
+function formatCode(el){var v=el.value.replace(/[^A-Z0-9a-z]/g,'').toUpperCase();el.value=[v.slice(0,4),v.slice(4,8),v.slice(8,12)].filter(Boolean).join('-');}
+
+function activate(){
+  var email=document.getElementById('actEmail').value.trim().toLowerCase();
+  var code=document.getElementById('actCode').value.trim().toUpperCase();
+  var errEl=document.getElementById('actError');errEl.style.display='none';
+  if(!email||!code){errEl.style.display='block';errEl.textContent='Completa todos los campos.';return;}
+  var vc=getValidCodes();
+  if(vc.indexOf(code)===-1){errEl.style.display='block';errEl.textContent='Código inválido o ya usado en 2 dispositivos.';return;}
+  var reg=getRegistry();if(!reg[code])reg[code]={devices:[],emails:[]};
+  var entry=reg[code],deviceId=getDeviceId();
+  if(entry.devices.indexOf(deviceId)!==-1){doLogin(email,code);return;}
+  if(entry.devices.length>=2){errEl.style.display='block';errEl.textContent='Código ya usado en 2 dispositivos.';return;}
+  entry.devices.push(deviceId);if(entry.emails.indexOf(email)===-1)entry.emails.push(email);
+  saveRegistry(reg);doLogin(email,code);
+}
+
+function doLogin(email,code){
+  localStorage.setItem('fh_session',JSON.stringify({email:email,code:code,deviceId:getDeviceId()}));
+  var hasEmailData=!!localStorage.getItem('fh_data_'+emailKey(email));
+  var hasOldData=!!localStorage.getItem('fh_data');
+  var isNew=!hasEmailData&&!hasOldData;
+  if(isNew){obCurrent=0;renderOnboarding();showScreen('screenOnboarding');}
+  else{loadAndShow(email);}
+}
+
+function loadAndShow(email){
+  loadData(email);
+  showScreen('screenApp');
+  var te=document.getElementById('toolbarEmail');if(te)te.textContent=email;
+  recalculate(false);
+}
+
+function checkSession(){
+  var s=localStorage.getItem('fh_session');
+  if(s){try{var sess=JSON.parse(s);if(sess&&sess.code&&sess.deviceId===getDeviceId()){loadAndShow(sess.email);return;}}catch(e){}}
+  showScreen('screenActivation');
+}
+
+function showScreen(id){
+  ['screenActivation','screenOnboarding','screenApp','screenAdmin'].forEach(function(s){
+    var el=document.getElementById(s);if(!el)return;
+    el.classList.remove('active');el.style.display='';
+  });
+  var t=document.getElementById(id);
+  if(t){if(id==='screenAdmin')t.style.display='block';else t.classList.add('active');}
+}
+
+// ---- ONBOARDING ----
+var obCurrent=0;
+var obStepsData=[
+  {icon:'🏠',title:'Tu presupuesto familiar',desc:'FinHome te ayuda a analizar si puedes comprar una casa usando el método 50/30/20.'},
+  {icon:'👥',title:'Agrega tus integrantes',desc:'Toca el botón "Integrantes" para agregar a cada persona del hogar. Sus salarios aparecerán en Ingresos automáticamente.'},
+  {icon:'📊',title:'Registra tus gastos',desc:'Agrega gastos y asígnalos a una persona específica. Los gastos temporales tienen contador de meses para proyecciones.'},
+  {icon:'🎯',title:'Analiza tu resultado',desc:'El Score y los Tips en 50/30/20 te dirán si comprar la casa es viable y cómo mejorar tu salud financiera.'}
+];
+function renderOnboarding(){
+  var se=document.getElementById('obSteps'),de=document.getElementById('obDots');
+  if(!se||!de)return;
+  var s=obStepsData[obCurrent];
+  se.innerHTML='<div class="ob-icon">'+s.icon+'</div><div class="ob-title">'+s.title+'</div><div class="ob-desc">'+s.desc+'</div>';
+  de.innerHTML='';
+  obStepsData.forEach(function(_,i){var d=document.createElement('div');d.className='ob-dot'+(i===obCurrent?' active':'');de.appendChild(d);});
+  var btn=document.getElementById('obNextBtn');if(btn)btn.textContent=obCurrent===obStepsData.length-1?'¡Comenzar!':'Siguiente →';
+}
+function obNext(){if(obCurrent<obStepsData.length-1){obCurrent++;renderOnboarding();}else finishOnboarding();}
+function finishOnboarding(){var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');loadAndShow(sess.email||'');}
+
+// ---- STATE ----
+var state={members:[],passive:[],necesidades:[],deseos:[],ahorros:[],nid:100};
+var pieInst=null,barInst=null;
+
+function fmt(v){return '$'+Math.round(Number(v)||0).toLocaleString('en-US');}
+function fmtD(v){return '$'+(Number(v)||0).toFixed(2);}
+// For temp items: amount = total debt, monthly = amount/months
+// For regular items: amount = monthly payment
+function monthlyAmount(item){
+  if(item.tag==='temp'){var m=Number(item.months||3);return m>0?Number(item.amount||0)/m:0;}
+  return Number(item.amount||0);
+}
+function sum(arr){return arr.reduce(function(s,x){return s+Number(x.amount||0);},0);}
+function sumMonthly(arr){return arr.reduce(function(s,x){return s+monthlyAmount(x);},0);}
+function sumTempMonthly(arr){return arr.filter(function(x){return x.tag==='temp';}).reduce(function(s,x){return s+monthlyAmount(x);},0);}
+function getTempMonthly(){return sumTempMonthly(state.necesidades)+sumTempMonthly(state.deseos);}
+// For projection: total debt remaining of temp items
+function getTempDebtTotal(){
+  var cats=[state.necesidades,state.deseos];
+  return cats.reduce(function(s,arr){return s+arr.filter(function(x){return x.tag==='temp';}).reduce(function(ss,x){return ss+Number(x.amount||0);},0);},0);
+}
+function getTempTotal(){return getTempMonthly();}
+function monthlyIncome(){return state.members.reduce(function(s,m){return s+(Number(m.weekly||0)*4.33);},0)+sumMonthly(state.passive);}
+
+// ---- SAVE / LOAD ----
+function saveData(){
+  var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');
+  var key='fh_data_'+emailKey(sess.email||'guest');
+  localStorage.setItem(key,JSON.stringify({members:state.members,passive:state.passive,necesidades:state.necesidades,deseos:state.deseos,ahorros:state.ahorros,nid:state.nid}));
+}
+
+function loadData(email){
+  var key='fh_data_'+emailKey(email||'guest');
+  var raw=localStorage.getItem(key);
+  if(!raw){var oldRaw=localStorage.getItem('fh_data');if(oldRaw){localStorage.setItem(key,oldRaw);raw=oldRaw;}}
+  state={members:[],passive:[],necesidades:[],deseos:[],ahorros:[],nid:100};
+  if(!raw)return;
+  try{
+    var d=JSON.parse(raw);
+    // Migrate old format (incRamon/incYesica + name1/name2) to members array
+    if(d.members){state.members=d.members;}
+    else if(d.incRamon!=null||d.incYesica!=null){
+      if(Number(d.incRamon||0)>0)state.members.push({id:1,name:d.name1||'Persona 1',weekly:Number(d.incRamon||0)});
+      if(Number(d.incYesica||0)>0)state.members.push({id:2,name:d.name2||'Persona 2',weekly:Number(d.incYesica||0)});
+    }
+    if(d.passive)state.passive=d.passive;
+    if(d.necesidades)state.necesidades=d.necesidades;
+    if(d.deseos)state.deseos=d.deseos;
+    if(d.ahorros)state.ahorros=d.ahorros;
+    if(d.nid)state.nid=d.nid;
+  }catch(e){}
+}
+
+function exportData(){
+  var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');
+  var data=JSON.stringify({members:state.members,passive:state.passive,necesidades:state.necesidades,deseos:state.deseos,ahorros:state.ahorros,nid:state.nid,email:sess.email,exportDate:new Date().toISOString()},null,2);
+  var blob=new Blob([data],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='finhome-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  alert('Datos exportados.');
+}
+
+function importData(event){
+  var file=event.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{var d=JSON.parse(e.target.result);
+      if(d.members)state.members=d.members;
+      if(d.passive)state.passive=d.passive;
+      if(d.necesidades)state.necesidades=d.necesidades;
+      if(d.deseos)state.deseos=d.deseos;
+      if(d.ahorros)state.ahorros=d.ahorros;
+      if(d.nid)state.nid=d.nid;
+      saveData();recalculate(false);alert('Datos importados.');
+    }catch(ex){alert('Error al importar.');}
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+// ---- MEMBERS ----
+function openMembers(){renderMembersList();openModal('membersModal');}
+
+function renderMembersList(){
+  var el=document.getElementById('membersList');if(!el)return;
+  el.innerHTML='';
+  state.members.forEach(function(m,i){
+    var row=document.createElement('div');row.className='member-row';
+    var initial=(m.name||'?')[0].toUpperCase();
+    row.innerHTML=
+      '<div class="member-avatar">'+initial+'</div>'+
+      '<input class="member-name-input" value="'+m.name+'" data-mid="'+m.id+'" placeholder="Nombre...">'+
+      '<span class="member-income-badge">'+fmt(Number(m.weekly||0)*4.33)+'/mes</span>'+
+      '<button class="btn-del" data-delm="'+m.id+'">×</button>';
+    el.appendChild(row);
+  });
+  // update count badge
+  var cnt=document.getElementById('memberCount');if(cnt)cnt.textContent=state.members.length;
+}
+
+document.body.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.dataset.mid){
+    var m=state.members.find(function(x){return x.id===Number(t.dataset.mid);});
+    if(m){m.name=t.value;renderMembersList();updatePersonSelects();}
+    return;
+  }
+  if(t.dataset.cat&&t.dataset.id){
+    var item=state[t.dataset.cat].find(function(x){return x.id===Number(t.dataset.id);});
+    if(item){item.amount=parseFloat(t.value)||0;recalculate(true);saveData();}return;
+  }
+  if(t.dataset.weeks&&t.dataset.mid){
+    var mb=state.members.find(function(x){return x.id===Number(t.dataset.mid);});
+    if(mb){mb.weekly=parseFloat(t.value)||0;recalculate(true);saveData();}return;
+  }
+  if(t.dataset.months){
+    var itm=state[t.dataset.cat].find(function(x){return x.id===Number(t.dataset.id);});
+    if(itm){itm.months=parseInt(t.value)||1;updateProjection();saveData();}return;
+  }
+  if(t.dataset.passive&&t.dataset.id){
+    var p=state.passive.find(function(x){return x.id===Number(t.dataset.id);});
+    if(p){p.amount=parseFloat(t.value)||0;recalculate(true);saveData();}return;
+  }
+});
+
+document.body.addEventListener('click',function(e){
+  var t=e.target;
+  if(t.dataset.delm){
+    state.members=state.members.filter(function(x){return x.id!==Number(t.dataset.delm);});
+    renderMembersList();renderIncomeCards();updatePersonSelects();recalculate(true);saveData();return;
+  }
+  if(t.classList.contains('btn-del')&&!t.dataset.delm){
+    if(t.dataset.passive){state.passive=state.passive.filter(function(x){return x.id!==Number(t.dataset.id);});renderPassive();}
+    else{state[t.dataset.cat]=state[t.dataset.cat].filter(function(x){return x.id!==Number(t.dataset.id);});renderList(t.dataset.cat);}
+    recalculate(true);saveData();
+  }
+});
+
+function addMember(){
+  var inp=document.getElementById('newMemberName');
+  var name=inp.value.trim();if(!name)return;
+  state.members.push({id:state.nid++,name:name,weekly:0});
+  inp.value='';
+  renderMembersList();renderIncomeCards();updatePersonSelects();
+  saveData();
+}
+
+function renderIncomeCards(){
+  var el=document.getElementById('incomeCards');if(!el)return;
+  el.innerHTML='';
+  state.members.forEach(function(m){
+    var initial=(m.name||'?')[0].toUpperCase();
+    var card=document.createElement('div');card.className='income-card';
+    card.innerHTML=
+      '<div class="income-top"><div class="income-avatar">'+initial+'</div><div class="income-name">'+m.name+'</div></div>'+
+      '<input type="number" class="income-val" value="'+(m.weekly||0)+'" data-weeks="1" data-mid="'+m.id+'" placeholder="0">'+
+      '<div class="income-sub">× 4.33 = '+fmt(Number(m.weekly||0)*4.33)+'/mes</div>';
+    el.appendChild(card);
+  });
+  if(state.members.length===0){
+    el.innerHTML='<div class="alert info"><div class="alert-icon">👥</div><div>Toca <strong>Integrantes</strong> en el header para agregar personas al hogar.</div></div>';
+  }
+  // Update member count badge
+  var cnt=document.getElementById('memberCount');if(cnt)cnt.textContent=state.members.length;
+}
+
+function updatePersonSelects(){
+  ['necesidades','deseos','ahorros'].forEach(function(cat){
+    var sel=document.getElementById('person-'+cat);if(!sel)return;
+    var prev=sel.value;
+    sel.innerHTML='<option value="">Todos</option>';
+    state.members.forEach(function(m){
+      var opt=document.createElement('option');opt.value=m.name;opt.textContent=m.name;sel.appendChild(opt);
+    });
+    sel.value=prev;
+  });
+}
+
+// ---- EXPENSE LISTS ----
+function renderList(cat){
+  var arr=state[cat];
+  var el=document.getElementById('list-'+cat);if(!el)return;
+  el.innerHTML='';
+  arr.forEach(function(item){
+    var isTemp=item.tag==='temp';
+    var months=Number(item.months||3);
+    var total=Number(item.amount||0);
+    var perMonth=isTemp?(months>0?total/months:0):total;
+    var perWeek=perMonth/4.33;
+    var tagHtml=isTemp?'<span class="row-tag temp">deuda</span>':item.tag==='savings'?'<span class="row-tag savings">inv.</span>':'';
+    var personHtml=item.person?'<span class="row-person">'+item.person+'</span>':'';
+
+    var wrap=document.createElement('div');wrap.className='debt-wrap';
+
+    var row=document.createElement('div');row.className='row';row.style.borderBottom='none';
+    var amtLabel=isTemp?'Saldo total':'Monto';
+    row.innerHTML='<span class="row-name">'+item.name+'</span>'+personHtml+tagHtml+
+      '<input type="number" class="row-input" value="'+total+'" data-cat="'+cat+'" data-id="'+item.id+'" placeholder="'+amtLabel+'">'+
+      '<button class="btn-del" data-cat="'+cat+'" data-id="'+item.id+'">×</button>';
+    wrap.appendChild(row);
+
+    if(isTemp){
+      var sub=document.createElement('div');sub.className='debt-breakdown';
+      sub.innerHTML=
+        '<span class="debt-label">Pago:</span>'+
+        '<span class="debt-chip">'+fmt(perMonth)+'/mes</span>'+
+        '<span class="debt-chip sec">'+fmtD(perWeek)+'/sem</span>'+
+        '<button class="debt-months-btn" data-openmonths="'+item.id+'" data-cat="'+cat+'">📅 '+months+' meses</button>';
+      wrap.appendChild(sub);
+    }
+    el.appendChild(wrap);
+  });
+  var tot=document.getElementById('total-'+cat);if(tot)tot.textContent=fmt(sumMonthly(arr));
+}
+
+function renderPassive(){
+  var el=document.getElementById('list-pasivos');if(!el)return;
+  el.innerHTML='';
+  state.passive.forEach(function(item){
+    var row=document.createElement('div');row.className='passive-row';
+    row.innerHTML='<div class="passive-dot"></div><span class="row-name" style="flex:1">'+item.name+'</span>'+
+      '<input type="number" class="row-input" value="'+item.amount+'" data-passive="1" data-id="'+item.id+'">'+
+      '<button class="btn-del" data-passive="1" data-id="'+item.id+'">×</button>';
+    el.appendChild(row);
+  });
+  var tot=document.getElementById('total-pasivos');if(tot)tot.textContent=fmt(sum(state.passive));
+}
+
+window.addExpense=function(cat){
+  var name=document.getElementById('name-'+cat).value.trim();
+  var amt=parseFloat(document.getElementById('amt-'+cat).value)||0;
+  var tag=(document.getElementById('tag-'+cat)||{}).value||'';
+  var person=(document.getElementById('person-'+cat)||{}).value||'';
+  if(!name||!amt)return;
+  state[cat].push({id:state.nid++,name:name,amount:amt,tag:tag,person:person,months:tag==='temp'?3:0});
+  document.getElementById('name-'+cat).value='';document.getElementById('amt-'+cat).value='';
+  renderList(cat);recalculate(true);saveData();
+};
+
+window.addPassive=function(){
+  var name=document.getElementById('passiveName').value.trim();
+  var amt=parseFloat(document.getElementById('passiveAmt').value)||0;
+  if(!name||!amt)return;
+  state.passive.push({id:state.nid++,name:name,amount:amt});
+  document.getElementById('passiveName').value='';document.getElementById('passiveAmt').value='';
+  renderPassive();recalculate(true);saveData();
+};
+
+// ---- PROJECTION ----
+function updateProjection(){
+  var simMonths=parseInt(document.getElementById('projMonths').value)||3;
+  document.getElementById('projMonthsLabel').textContent=simMonths;
+  var total=monthlyIncome();
+  var nec=sumMonthly(state.necesidades),des=sumMonthly(state.deseos),aho=sumMonthly(state.ahorros);
+  var sob=total-nec-des-aho;
+  var tempMonthly=getTempMonthly();
+  // Auto projection (real months per debt)
+  document.getElementById('projNow').textContent=fmt(sob);
+  document.getElementById('projFree').textContent=fmt(tempMonthly);
+  document.getElementById('projAfter').textContent=fmt(sob+tempMonthly);
+  // Sim: distribute total debt over simMonths
+  var tempDebt=getTempDebtTotal();
+  var simPayment=simMonths>0?tempDebt/simMonths:0;  // how much to pay per month total
+  var simSob=sob+simPayment;                        // surplus after debts are cleared at that rate
+  var payEl=document.getElementById('projSimPayment');if(payEl)payEl.textContent=fmt(simPayment)+'/mes';
+  var simEl=document.getElementById('projSim');if(simEl)simEl.textContent=fmt(sob+getTempMonthly())+'/mes';
+  var lbl=document.getElementById('projAfterLbl');if(lbl)lbl.textContent='Al liquidar';
+}
+document.getElementById('projMonths').addEventListener('input',function(){updateProjection();});
+
+// ---- RECALCULATE ----
+function recalculate(skipLists){
+  var total=monthlyIncome();
+  var nec=sumMonthly(state.necesidades),des=sumMonthly(state.deseos),aho=sumMonthly(state.ahorros),pas=sumMonthly(state.passive);
+  var sob=total-nec-des-aho;
+  var t50=total*.5,t30=total*.3,t20=total*.2;
+
+  // Update income cards sub
+  state.members.forEach(function(m){
+    var subs=document.querySelectorAll('[data-mid="'+m.id+'"]~.income-sub,[data-weeks][data-mid="'+m.id+'"]');
+    // simpler: re-render income cards
+  });
+
+  if(!skipLists){renderList('necesidades');renderList('deseos');renderList('ahorros');renderPassive();renderIncomeCards();}
+  else{
+    ['necesidades','deseos','ahorros'].forEach(function(c){var el=document.getElementById('total-'+c);if(el)el.textContent=fmt(sumMonthly(state[c]));});
+    var tp=document.getElementById('total-pasivos');if(tp)tp.textContent=fmt(pas);
+  }
+
+  renderKPIs(total,nec,des,aho,sob,pas);
+  renderMethod(total,nec,des,aho,t50,t30,t20);
+  renderScore(total,nec,des,aho,sob,t50,t30,t20);
+  renderCharts(nec,des,aho,sob,total,t50,t30,t20);
+  renderAlerts(total,nec,des,aho,sob,t50,t30,t20);
+  renderTips(total,nec,des,aho,sob,t50,t30,t20);
+  renderViability(total,nec,sob);
+  updateProjection();
+}
+
+function renderKPIs(total,nec,des,aho,sob,pas){
+  var grid=document.getElementById('kpiGrid');if(!grid)return;
+  var sc=sob<0?'red':sob<200?'yellow':'green';
+  grid.innerHTML=
+    kpiEl('Ingreso mensual',fmt(total),'Incl. '+fmt(pas)+' pasivos','accent')+
+    kpiEl('Total gastos',fmt(nec+des+aho),'Nec + Deseos + Ahorros','')+
+    kpiEl('Sobrante/mes',fmt(sob),fmtD(sob/4.33)+'/sem libre',sc)+
+    kpiEl('Ahorrando/mes',fmt(aho),((total>0?(aho/total)*100:0)).toFixed(1)+'% del ingreso','purple')+
+    kpiEl('Casa + servicios',fmt(nec),((total>0?(nec/total)*100:0)).toFixed(1)+'% del ingreso','')+
+    kpiEl('Se libera pronto',fmt(getTempTotal()),'deudas temporales','green');
+}
+function kpiEl(l,v,s,c){return '<div class="kpi"><div class="kpi-label">'+l+'</div><div class="kpi-value '+c+'">'+v+'</div><div class="kpi-sub">'+s+'</div></div>';}
+
+function renderMethod(total,nec,des,aho,t50,t30,t20){
+  var el=document.getElementById('methodCard');if(!el)return;
+  el.innerHTML=mBar('Necesidades (50%)',nec,t50,total,'#007aff')+mBar('Deseos (30%)',des,t30,total,'#5856d6')+mBar('Ahorros (20%)',aho,t20,total,'#34c759');
+}
+function mBar(label,actual,target,total,color){
+  var pct=Math.min(target>0?(actual/target)*100:0,130);
+  var c=actual>target?'#ff3b30':color;
+  var diff=actual-target;
+  var ds=diff>=0?'+'+fmt(diff)+' sobre meta':fmt(Math.abs(diff))+' disponible';
+  return '<div class="m-row"><div class="m-top"><span class="m-name" style="color:'+c+'">'+label+'</span><span class="m-vals">'+fmt(actual)+' / '+fmt(target)+'</span></div>'+
+    '<div class="m-bar-bg"><div class="m-bar-fill" style="width:'+pct+'%;background:'+c+'"></div></div>'+
+    '<div class="m-note">'+ds+' · '+((total>0?(actual/total)*100:0)).toFixed(1)+'% del ingreso</div></div>';
+}
+
+function renderScore(total,nec,des,aho,sob,t50,t30,t20){
+  var score=100,badges=[];
+  var necR=total>0?nec/total:0;
+  if(necR>.65){score-=30;badges.push({l:'Necesidades críticas',c:'danger'});}
+  else if(necR>.55){score-=15;badges.push({l:'Necesidades elevadas',c:'warn'});}
+  else badges.push({l:'Necesidades OK',c:'ok'});
+  if(sob<0){score-=35;badges.push({l:'Déficit mensual',c:'danger'});}
+  else if(sob<100){score-=15;badges.push({l:'Margen mínimo',c:'warn'});}
+  else if(sob>300)badges.push({l:'Buen sobrante',c:'ok'});
+  var ahoR=total>0?aho/total:0;
+  if(ahoR<.05){score-=20;badges.push({l:'Ahorro bajo',c:'danger'});}
+  else if(ahoR<.15){score-=5;badges.push({l:'Ahorro moderado',c:'warn'});}
+  else badges.push({l:'Ahorro saludable',c:'ok'});
+  var hipoteca=state.necesidades.find(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')!==-1;});var hipMonto=hipoteca?Number(hipoteca.amount||0):0;var mortR=total>0&&hipMonto>0?hipMonto/total:0;
+  if(mortR>.40){score-=10;badges.push({l:'Casa: revisar',c:'warn'});}
+  else if(total>0)badges.push({l:'Casa asequible',c:'ok'});
+  score=Math.max(0,Math.min(100,score));
+  var arc=document.getElementById('scoreArc'),numEl=document.getElementById('scoreNum');
+  var titleEl=document.getElementById('scoreTitle'),descEl=document.getElementById('scoreDesc'),badgesEl=document.getElementById('scoreBadges');
+  var circ=163.4,color=score>=75?'#34c759':score>=50?'#ff9500':'#ff3b30';
+  if(arc){arc.style.strokeDashoffset=circ-(score/100)*circ;arc.style.stroke=color;}
+  if(numEl){numEl.textContent=score;numEl.style.color=color;}
+  if(titleEl){titleEl.textContent=score>=75?'Finanzas saludables':score>=50?'Presupuesto ajustado':'Presupuesto tenso';titleEl.style.color=color;}
+  if(descEl)descEl.textContent=score>=75?'El plan es viable. Comprar la casa es una buena decisión.':score>=50?'Viable pero con poco margen. Considera liberar deudas primero.':'Muy ajustado. Revisa necesidades o espera a liberar deudas temporales.';
+  if(badgesEl)badgesEl.innerHTML=badges.map(function(b){return '<span class="badge '+b.c+'">'+b.l+'</span>';}).join('');
+}
+
+function renderCharts(nec,des,aho,sob,total,t50,t30,t20){
+  var pc=document.getElementById('pieChart'),bc=document.getElementById('barChart');
+  if(!pc||!bc)return;
+  if(pieInst){try{pieInst.destroy();}catch(e){}}
+  if(barInst){try{barInst.destroy();}catch(e){}}
+  var sa=Math.max(0,sob);
+  pieInst=new Chart(pc.getContext('2d'),{type:'doughnut',
+    data:{labels:['Necesidades','Deseos','Ahorros','Sobrante'],datasets:[{data:[nec,des,aho,sa],backgroundColor:['#007aff','#5856d6','#34c759','#e5e5ea'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:'#8e8e93',font:{size:10},padding:8,boxWidth:10}},
+      tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw)+' ('+(total>0?((c.raw/total)*100).toFixed(1):0)+'%)';}}}}}
+  });
+  barInst=new Chart(bc.getContext('2d'),{type:'bar',
+    data:{labels:['Necesidades','Deseos','Ahorros'],datasets:[
+      {label:'Real',data:[nec,des,aho],backgroundColor:['rgba(0,122,255,.8)','rgba(88,86,214,.8)','rgba(52,199,89,.8)'],borderRadius:8},
+      {label:'Target',data:[t50,t30,t20],backgroundColor:'rgba(0,0,0,.06)',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderRadius:8}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8e8e93',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw);}}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e8e93',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e8e93',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(1)+'k';}}}}}
+  });
+}
+
+function renderAlerts(total,nec,des,aho,sob,t50,t30,t20){
+  var el=document.getElementById('alertsContainer');if(!el)return;
+  var months=parseInt(document.getElementById('projMonths').value)||3;
+  var tempTotal=getTempTotal();var html='';
+  if(sob<0)html+=alertEl('danger','⚠️','<strong>Déficit de '+fmt(Math.abs(sob))+'/mes.</strong> Los gastos superan el ingreso.');
+  else if(sob<150)html+=alertEl('warn','⚡','<strong>Margen bajo:</strong> Solo '+fmt(sob)+'/mes sobrante.');
+  else html+=alertEl('ok','✅','<strong>Sobrante de '+fmt(sob)+'/mes</strong> — '+fmtD(sob/4.33)+'/semana disponible.');
+  if(nec>t50)html+=alertEl('warn','🏠','Necesidades sobre el 50%: '+fmt(nec)+' vs meta '+fmt(t50)+'.');
+  if(tempTotal>0)html+=alertEl('info','📅','En '+months+' meses se liberan ~'+fmt(tempTotal)+'/mes. Sobrante futuro: '+fmt(sob+tempTotal)+'/mes.');
+  el.innerHTML=html;
+}
+function alertEl(cls,icon,msg){return '<div class="alert '+cls+'"><div class="alert-icon">'+icon+'</div><div>'+msg+'</div></div>';}
+
+function renderTips(total,nec,des,aho,sob,t50,t30,t20){
+  var el=document.getElementById('tipsContainer');if(!el)return;
+  var months=parseInt(document.getElementById('projMonths').value)||3;
+  var tempTotal=getTempTotal();
+  var hipotecaT=state.necesidades.find(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')!==-1;});var hipMontoT=hipotecaT?Number(hipotecaT.amount||0):0;var mortP=((total>0&&hipMontoT>0?hipMontoT/total:0)*100).toFixed(1);
+  var ahoP=((total>0?aho/total:0)*100).toFixed(1);
+  var newAhoP=((total>0?(aho+tempTotal)/total:0)*100).toFixed(1);
+  var html='';
+  html+=tipEl(2068/Math.max(total,1)>.35?'warn':'ok',2068/Math.max(total,1)>.35?'🏠':'✅','Tu hipoteca representa el '+mortP+'% del ingreso'+(2068/Math.max(total,1)>.35?' — lo ideal es <30%.':' — rango saludable.'));
+  html+=tipEl(aho/Math.max(total,1)<.15?'warn':'ok',aho/Math.max(total,1)<.15?'💰':'📈',aho/Math.max(total,1)<.15?'Ahorras el '+ahoP+'%. Intenta llegar al 20%.':'¡Ahorras el '+ahoP+'% del ingreso! Buen ritmo.');
+  if(tempTotal>0)html+=tipEl('info','🚀','Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu ahorro podría subir a '+fmt(aho+tempTotal)+'/mes ('+newAhoP+'%).');
+  html+=tipEl('info','🛡','Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').');
+  html+=tipEl(des>t30?'warn':'ok','🎯',des>t30?'Tus deseos ('+fmt(des)+') superan la meta del 30% ('+fmt(t30)+').':'Tus deseos están dentro del 30% — buen control.');
+  el.innerHTML=html;
+}
+function tipEl(cls,icon,title){return '<div class="tip-card '+cls+'"><div class="tip-icon">'+icon+'</div><div class="tip-title">'+title+'</div></div>';}
+
+function renderViability(total,nec,sob){
+  var el=document.getElementById('viabilityCard');if(!el)return;
+  var months=parseInt(document.getElementById('projMonths').value)||3;
+  var tempTotal=getTempTotal();
+  var hipotecaV=state.necesidades.find(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')!==-1;});var hipMontoV=hipotecaV?Number(hipotecaV.amount||0):0;var mp=((total>0&&hipMontoV>0?hipMontoV/total:0)*100).toFixed(1);
+  var hp=((total>0&&nec>0?nec/total:0)*100).toFixed(1);
+  var ok=total>0&&hipMontoV>0&&hipMontoV/total<=.35;
+  var rows=[['Ingreso mensual total',fmt(total),'var(--text)'],['Hipoteca',fmt(2068)+' ('+mp+'%)','var(--accent)'],['Casa + servicios',fmt(2400)+' ('+hp+'%)','var(--accent)'],['Sobrante actual',fmt(sob),'var(--green)'],['Sobrante en '+months+' meses',fmt(sob+tempTotal),'var(--green)']];
+  var html='<div>';
+  rows.forEach(function(r){html+='<div class="via-row"><span class="via-label">'+r[0]+'</span><span class="via-val" style="color:'+r[2]+'">'+r[1]+'</span></div>';});
+  html+='</div><div style="padding:0 12px 12px">'+alertEl(ok?'ok':'warn',ok?'✅':'⚡',ok?'La hipoteca es manejable. El plan de compra es viable.':'La hipoteca es alta. Considera esperar a liberar las deudas temporales.')+'</div>';
+  el.innerHTML=html;
+}
+
+window.showTab=function(id,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  var p=document.getElementById('panel-'+id);if(p)p.classList.add('active');if(btn)btn.classList.add('active');
+};
+
+// ---- ADMIN ----
+var adminTaps=0,adminTimer=null;
+window.tryAdmin=function(){
+  adminTaps++;clearTimeout(adminTimer);
+  adminTimer=setTimeout(function(){adminTaps=0;},2000);
+  if(adminTaps>=5){adminTaps=0;var pw=prompt('Admin password:');if(pw===ADMIN_PASSWORD){showScreen('screenAdmin');renderAdminCodes();}}
+};
+function renderAdminCodes(){
+  var reg=getRegistry(),vc=getValidCodes(),el=document.getElementById('adminCodeList');if(!el)return;
+  var html='';
+  vc.forEach(function(code){var entry=reg[code]||{devices:[]};var used=entry.devices.length;var cls=used===0?'avail':used>=2?'full':'used';html+='<div class="admin-code-row"><span style="flex:1">'+code+'</span><span class="admin-code-status '+cls+'">'+(used===0?'Disponible':used+'/2')+'</span></div>';});
+  el.innerHTML=html||'<div style="color:#8e8e93;font-size:13px">Sin registros.</div>';
+  document.getElementById('adminCodes').value=vc.join('\n');
+}
+window.saveAdminCodes=function(){var codes=document.getElementById('adminCodes').value.split('\n').map(function(c){return c.trim().toUpperCase();}).filter(Boolean);localStorage.setItem('fh_valid_codes',JSON.stringify(codes));alert('✅ Códigos guardados: '+codes.length);renderAdminCodes();};
+window.resetCode=function(){var code=document.getElementById('resetCode').value.trim().toUpperCase();if(!code){alert('Ingresa un código.');return;}var reg=getRegistry();if(reg[code]){delete reg[code];saveRegistry(reg);alert('✅ Reiniciado: '+code);}else alert('No encontrado.');renderAdminCodes();};
+window.exitAdmin=function(){var sess=localStorage.getItem('fh_session');if(sess)showScreen('screenApp');else showScreen('screenActivation');};
+
+
+// ---- MONTHS MODAL ----
+var _monthsCtx={cat:null,id:null,val:3};
+function openMonthsModal(cat,id){
+  var item=state[cat].find(function(x){return x.id===Number(id);});
+  if(!item)return;
+  _monthsCtx={cat:cat,id:Number(id),val:Number(item.months||3)};
+  var total=Number(item.amount||0);
+  document.getElementById('monthsModalTitle').textContent='Meses para liquidar: '+item.name;
+  updateMonthsModal(total);
+  openModal('monthsModal');
+}
+function updateMonthsModal(total){
+  var v=_monthsCtx.val;
+  document.getElementById('monthsModalVal').textContent=v;
+  var perMonth=v>0?total/v:0;
+  var perWeek=perMonth/4.33;
+  document.getElementById('monthsModalCalc').innerHTML=
+    '<strong>'+fmt(perMonth)+'/mes</strong> &nbsp;·&nbsp; '+fmtD(perWeek)+'/sem<br>'+
+    '<span style="font-size:12px;color:var(--text3)">Total deuda: '+fmt(total)+'</span>';
+}
+function adjustMonths(delta){
+  _monthsCtx.val=Math.max(1,Math.min(120,_monthsCtx.val+delta));
+  var item=state[_monthsCtx.cat].find(function(x){return x.id===_monthsCtx.id;});
+  if(item)updateMonthsModal(Number(item.amount||0));
+}
+function confirmMonths(){
+  var item=state[_monthsCtx.cat].find(function(x){return x.id===_monthsCtx.id;});
+  if(item){item.months=_monthsCtx.val;renderList(_monthsCtx.cat);recalculate(true);saveData();}
+  closeModal('monthsModal');
+}
+
+// Handle debt-months-btn clicks
+document.body.addEventListener('click',function(e){
+  var t=e.target.closest('[data-openmonths]');
+  if(t){openMonthsModal(t.dataset.cat,t.dataset.openmonths);}
+});
+
+
+// ============================================================
+// CASA — ANÁLISIS DE HIPOTECA
+// ============================================================
+var casaPlazo = 30;
+
+function setCasaPlazo(y, btn) {
+  casaPlazo = y;
+  document.querySelectorAll('.seg-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  casaRecalc();
+}
+
+function showCasaTab(id, btn) {
+  document.querySelectorAll('.casa-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.casa-sub-btn').forEach(function(b){b.classList.remove('active');});
+  var p = document.getElementById('panel-'+id); if(p) p.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function casaFmt(v){return '$'+Math.round(Number(v)||0).toLocaleString('en-US');}
+function casaFmtD(v){return '$'+(Number(v)||0).toFixed(2);}
+function casaFmtPct(v){return (Number(v)||0).toFixed(1)+'%';}
+
+function casaCalcPI(principal, tasaAnual, anios) {
+  var r = (tasaAnual/100)/12;
+  var n = anios*12;
+  if(r===0) return principal/n;
+  return principal * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n)-1);
+}
+
+function casaCalcPayoffExtra(principal, tasaAnual, extraPago) {
+  var r = (tasaAnual/100)/12;
+  var pi = casaCalcPI(principal, tasaAnual, casaPlazo);
+  var payment = pi + extraPago;
+  var balance = principal;
+  var months = 0;
+  var totalInt = 0;
+  while(balance > 0.01 && months < casaPlazo*12+1) {
+    var intM = balance * r;
+    var princM = Math.min(payment - intM, balance);
+    if(princM <= 0) break;
+    balance -= princM;
+    totalInt += intM;
+    months++;
+  }
+  return {months:months, years:(months/12).toFixed(1), totalInt:totalInt};
+}
+
+function casaBuildAmort(principal, tasaAnual, anios) {
+  var r = (tasaAnual/100)/12;
+  var pi = casaCalcPI(principal, tasaAnual, anios);
+  var balance = principal;
+  var rows = [];
+  for(var yr=1; yr<=anios; yr++) {
+    var yp=0,yi=0;
+    for(var m=0;m<12;m++){
+      if(balance<=0.01) break;
+      var im=balance*r;
+      var pm=Math.min(pi-im, balance);
+      yp+=pm; yi+=im; balance-=pm;
+    }
+    rows.push({yr:yr, payment:pi*12, principal:yp, interest:yi, balance:Math.max(0,balance)});
+  }
+  return rows;
+}
+
+function casaSetText(id, val) {var el=document.getElementById(id); if(el) el.textContent=val;}
+
+function casaRecalc() {
+  var precio   = Number(document.getElementById('c_precio').value)||0;
+  var pctEng   = Number(document.getElementById('c_enganche').value)||0;
+  var tasa     = Number(document.getElementById('c_tasa').value)||0;
+  var taxPct   = Number(document.getElementById('c_tax').value)||0;
+  var segPct   = Number(document.getElementById('c_seguro').value)||0;
+  var pmiPct   = Number(document.getElementById('c_pmi').value)||0;
+  var mantPct  = Number(document.getElementById('c_mant').value)||0;
+  var hoa      = Number(document.getElementById('c_hoa').value)||0;
+  var extra    = Number(document.getElementById('c_extra').value)||0;
+  var ingreso  = monthlyIncome() || 1;
+
+  var engMonto  = precio * (pctEng/100);
+  var principal = precio - engMonto;
+
+  // Monthly derived from %
+  var taxMes  = (precio * taxPct/100) / 12;
+  var segMes  = (precio * segPct/100) / 12;
+  var pmiMes  = pctEng < 20 ? (principal * pmiPct/100) / 12 : 0;
+  var mantMes = (precio * mantPct/100) / 12;
+
+  // Show derived amounts in Datos tab
+  var tc = document.getElementById('c_tax_calc');    if(tc) tc.textContent = '= '+casaFmt(taxMes)+'/mes';
+  var sc = document.getElementById('c_seguro_calc'); if(sc) sc.textContent = '= '+casaFmt(segMes)+'/mes';
+  var pc = document.getElementById('c_pmi_calc');    if(pc) pc.textContent = pctEng<20 ? '= '+casaFmt(pmiMes)+'/mes' : '= $0 (enganche ≥20%)';
+  var mc = document.getElementById('c_mant_calc');   if(mc) mc.textContent = '= '+casaFmt(mantMes)+'/mes';
+
+  var pi       = casaCalcPI(principal, tasa, casaPlazo);
+  var totalInt = pi * casaPlazo*12 - principal;
+  var totalpag = principal + totalInt;
+  var piti     = pi + taxMes + segMes + pmiMes + hoa;
+  var costoReal= piti + mantMes;
+  var pctIng   = (piti/ingreso)*100;
+
+  // Result tab
+  casaSetText('c_piti', casaFmt(piti));
+  casaSetText('c_piti_sub', 'P+I '+casaFmt(pi)+' · Tax '+casaFmt(taxMes)+' · Seg '+casaFmt(segMes)+(pmiMes>0?' · PMI '+casaFmt(pmiMes):'')+(hoa>0?' · HOA '+casaFmt(hoa):''));
+  casaSetText('c_pi', casaFmt(pi));
+  casaSetText('c_totalint', casaFmt(totalInt));
+  casaSetText('c_costoreal', casaFmt(costoReal));
+  casaSetText('c_engmonto', casaFmt(engMonto));
+  casaSetText('c_totalpag', casaFmt(totalpag));
+
+  var pctEl = document.getElementById('c_pct');
+  if(pctEl){pctEl.textContent=casaFmtPct(pctIng);pctEl.className='kpi-value '+(pctIng<=28?'green':pctIng<=36?'yellow':'red');}
+
+  // Extra payment
+  if(extra>0){
+    var we = casaCalcPayoffExtra(principal, tasa, extra);
+    var savedYrs = (casaPlazo - Number(we.years)).toFixed(1);
+    var savedInt = totalInt - we.totalInt;
+    casaSetText('c_anosextra', we.years+' años (ahorras '+savedYrs+')');
+    casaSetText('c_ahorroextra', casaFmt(savedInt));
+  } else {
+    casaSetText('c_anosextra', casaPlazo+' años (sin extra)');
+    casaSetText('c_ahorroextra', 'Agrega pago extra');
+  }
+
+  // Diagnostico
+  casaRenderDiag(pctIng, pctEng, tasa, precio, pi, costoReal, ingreso, pmiMes);
+
+  // Amort table
+  var rows = casaBuildAmort(principal, tasa, casaPlazo);
+  var tbl = document.getElementById('c_amortTable');
+  if(tbl){
+    tbl.innerHTML='';
+    rows.forEach(function(r,i){
+      var d=document.createElement('div');
+      d.className='amort-row'+(i%5===4?' hl':'');
+      d.innerHTML='<span>'+r.yr+'</span><span>'+casaFmt(r.payment)+'</span><span class="ap">'+casaFmt(r.principal)+'</span><span class="ai">'+casaFmt(r.interest)+'</span><span>'+casaFmt(r.balance)+'</span>';
+      tbl.appendChild(d);
+    });
+  }
+
+  // Reporte
+  casaRenderReporte(precio, engMonto, principal, pi, piti, costoReal, totalInt, totalpag, pctIng, pctEng, tasa, taxMes, segMes, pmiMes, mantMes, hoa);
+}
+
+function casaRenderDiag(pctIng, pctEng, tasa, precio, pi, costoReal, ingreso, pmiMes) {
+  var el = document.getElementById('c_diagnostico'); if(!el) return;
+  var items = [];
+  if(pctIng<=28) items.push({cls:'ok',icon:'✅',title:'Carga hipotecaria saludable ('+casaFmtPct(pctIng)+')',desc:'Cumples la regla del 28%. Los bancos ven esto favorablemente para aprobar el préstamo.'});
+  else if(pctIng<=36) items.push({cls:'warn',icon:'⚡',title:'Carga elevada ('+casaFmtPct(pctIng)+')',desc:'Entre 28-36%. Manejable pero ajustado. Algunos lenders aplican la regla del 36%.'});
+  else items.push({cls:'danger',icon:'⚠️',title:'Carga alta ('+casaFmtPct(pctIng)+')',desc:'Supera el 36% del ingreso. Puede dificultar la aprobación del préstamo. Considera aumentar el enganche o buscar una propiedad más económica.'});
+
+  if(pctEng>=20) items.push({cls:'ok',icon:'✅',title:'Enganche sólido ('+pctEng+'%)',desc:'Evitas el PMI y obtienes mejor tasa. Posición de compra fuerte.'});
+  else if(pctEng>=10) items.push({cls:'warn',icon:'💡',title:'Enganche del '+pctEng+'% — PMI aplicado',desc:'Pagarás PMI '+casaFmt(pmiMes)+'/mes hasta alcanzar el 20% de equity. Se cancela automáticamente.'});
+  else items.push({cls:'danger',icon:'⚠️',title:'Enganche bajo ('+pctEng+'%)',desc:'PMI alto y tasa desfavorable. Evalúa programas FHA (3.5% mínimo) o ahorra más enganche.'});
+
+  if(tasa<=5.5) items.push({cls:'ok',icon:'✅',title:'Tasa competitiva ('+tasa+'%)',desc:'Por debajo del promedio actual. Excelente condición.'});
+  else if(tasa<=7) items.push({cls:'warn',icon:'📊',title:'Tasa en rango normal ('+tasa+'%)',desc:'Promedio del mercado 2026. Compara con al menos 3 lenders antes de cerrar.'});
+  else items.push({cls:'danger',icon:'⚠️',title:'Tasa elevada ('+tasa+'%)',desc:'Pagarás significativamente más en intereses. Considera esperar mejores tasas o negociar con el lender.'});
+
+  items.push({cls:'info',icon:'🏠',title:'Costo real mensual: '+casaFmt(costoReal),desc:'Esto incluye hipoteca, impuestos, seguro, PMI y mantenimiento estimado. Es lo que realmente sale de tu bolsillo cada mes.'});
+
+  el.innerHTML = items.map(function(i){
+    return '<div class="verdict-card '+i.cls+'"><div class="verdict-title">'+i.icon+' '+i.title+'</div><div class="verdict-desc">'+i.desc+'</div></div>';
+  }).join('');
+}
+
+function casaRenderReporte(precio, engMonto, principal, pi, piti, costoReal, totalInt, totalpag, pctIng, pctEng, tasa, taxMes, segMes, pmiMes, mantMes, hoa) {
+  var el = document.getElementById('c_reporte'); if(!el) return;
+  var score = 100;
+  if(pctIng>36) score-=30; else if(pctIng>28) score-=15;
+  if(pctEng<10) score-=20; else if(pctEng<20) score-=10;
+  if(tasa>7) score-=15; else if(tasa>6.5) score-=5;
+  score = Math.max(0, Math.min(100, score));
+  var sc = score>=75?'ok':score>=50?'warn':'danger';
+  var sl = score>=75?'✅ Compra viable':score>=50?'⚡ Compra con precaución':'⛔ Revisa antes de comprar';
+
+  var html = '<div style="text-align:center;padding:16px 0 8px;">';
+  html += '<div class="score-pill '+sc+'">'+sl+' · Score '+score+'</div></div>';
+
+  html += casaSection('💰 Financiamiento',[
+    ['Precio de la casa', casaFmt(precio)],
+    ['Enganche ('+pctEng+'%)', casaFmt(engMonto)],
+    ['Préstamo (principal)', casaFmt(principal)],
+    ['Tasa de interés', tasa+'% anual'],
+    ['Plazo', casaPlazo+' años'],
+  ]);
+  html += casaSection('📅 Pagos mensuales',[
+    ['Principal + Interés', casaFmt(pi)],
+    ['Property Tax', casaFmt(taxMes)],
+    ['Seguro de casa', casaFmt(segMes)],
+    pmiMes>0?['PMI', casaFmt(pmiMes)]:null,
+    hoa>0?['HOA', casaFmt(hoa)]:null,
+    ['Mantenimiento est.', casaFmt(mantMes)],
+    ['PITI total', casaFmt(piti), true],
+    ['Costo real mensual', casaFmt(costoReal), true],
+    ['% del ingreso familiar', casaFmtPct(pctIng), true],
+  ].filter(Boolean));
+  html += casaSection('📊 Costo total a '+casaPlazo+' años',[
+    ['Total de pagos (P+I)', casaFmt(totalpag)],
+    ['De los cuales, intereses', casaFmt(totalInt)],
+    ['Pagas '+casaFmtPct((totalInt/precio)*100)+' extra sobre el precio de la casa', ''],
+  ]);
+
+  var rec = score>=75
+    ? 'Las condiciones son favorables. El pago mensual es manejable y el enganche es adecuado. Procede con confianza — asegúrate de comparar al menos 3 lenders.'
+    : score>=50
+    ? 'La compra es posible pero con margen ajustado. Considera pagos extra para reducir intereses, o espera a mejorar el enganche para obtener mejor tasa.'
+    : 'Se recomienda esperar o reevaluar. La carga hipotecaria es alta respecto al ingreso, lo que puede dificultar la aprobación y dejar poco margen para imprevistos.';
+
+  html += '<div class="verdict-card '+(score>=75?'ok':score>=50?'warn':'danger')+'" style="margin-bottom:10px;">';
+  html += '<div class="verdict-title">'+(score>=75?'✅':score>=50?'⚡':'⛔')+' Recomendación final</div>';
+  html += '<div class="verdict-desc">'+rec+'</div></div>';
+  html += '<div class="verdict-card info"><div class="verdict-title">⚠️ Aviso</div><div class="verdict-desc">Estimación basada en datos públicos. Los valores reales varían según lender, historial crediticio y mercado al momento de la compra.</div></div>';
+
+  el.innerHTML = html;
+}
+
+function casaSection(title, rows) {
+  var html = '<div class="report-sect"><div class="report-sect-head">'+title+'</div>';
+  rows.forEach(function(r){
+    if(!r[1]) {
+      html += '<div style="padding:8px 16px;font-size:11px;color:var(--text3);font-style:italic;">'+r[0]+'</div>';
+    } else {
+      html += '<div class="report-rrow"><span class="report-rlabel">'+r[0]+'</span><span class="report-rval" style="'+(r[2]?'color:var(--accent)':'')+'">'+r[1]+'</span></div>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+var casaSearchQueries = [
+  {icon:'🏦',bg:'rgba(0,122,255,.1)',title:'Tasa hipotecaria actual',query:'mortgage interest rate {zona} 2026 average',desc:'APR anual — pégalo en Tasa de interés'},
+  {icon:'🏛',bg:'rgba(88,86,214,.1)',title:'Property Tax Rate',query:'property tax rate {zona} Illinois 2026 percentage',desc:'% anual — pégalo en Property Tax'},
+  {icon:'🛡',bg:'rgba(52,199,89,.1)',title:'Home insurance rate',query:'average home insurance rate {zona} Illinois 2026 percentage',desc:'% anual — pégalo en Seguro de casa'},
+  {icon:'🏘',bg:'rgba(255,149,0,.1)',title:'HOA fees promedio',query:'HOA fees average {zona} Illinois monthly',desc:'Monto mensual fijo — pégalo en HOA'},
+  {icon:'📐',bg:'rgba(255,59,48,.1)',title:'Precio por sq ft',query:'average home price per square foot {zona} Illinois 2026',desc:'Para comparar si el precio es justo'},
+  {icon:'📊',bg:'rgba(50,173,230,.1)',title:'Mercado inmobiliario',query:'real estate market {zona} Illinois 2026 trends',desc:'Tendencias y precios de la zona'},
+];
+
+function updateCasaLinks() {
+  var zona = document.getElementById('c_zona').value.trim() || 'tu zona';
+  var el = document.getElementById('c_searchLinks'); if(!el) return;
+  el.innerHTML = casaSearchQueries.map(function(q){
+    var query = q.query.replace('{zona}', zona);
+    var url = 'https://www.google.com/search?q='+encodeURIComponent(query);
+    return '<a class="search-link" href="'+url+'" target="_blank">'+
+      '<div class="search-icon-box" style="background:'+q.bg+'">'+q.icon+'</div>'+
+      '<div class="search-info"><div class="search-title">'+q.title+'</div><div class="search-desc">'+q.desc+'</div></div>'+
+      '<span style="font-size:18px;color:var(--text3);">›</span></a>';
+  }).join('');
+}
+
+// ---- INIT ----
+updateCasaLinks();
+casaRecalc();
+checkSession();
+</script>
+</body>
+</html>
