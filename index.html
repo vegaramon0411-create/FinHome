@@ -449,12 +449,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     </div>
     <div class="tabs-wrap">
       <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('resumen',this)">Resumen</button>
-        <button class="tab-btn" onclick="showTab('ingresos',this)">Ingresos</button>
-        <button class="tab-btn" onclick="showTab('gastos',this)">Gastos</button>
-        <button class="tab-btn" onclick="showTab('ahorros',this)">Ahorros</button>
-        <button class="tab-btn" onclick="showTab('metodo',this)">50/30/20</button>
-        <button class="tab-btn" onclick="showTab('casa',this)">🏡 Casa</button>
+        <button class="tab-btn active" onclick="showTab('resumen',this)" data-lang="tab_resumen">Resumen</button>
+        <button class="tab-btn" onclick="showTab('ingresos',this)" data-lang="tab_ingresos">Ingresos</button>
+        <button class="tab-btn" onclick="showTab('gastos',this)" data-lang="tab_gastos">Gastos</button>
+        <button class="tab-btn" onclick="showTab('ahorros',this)" data-lang="tab_ahorros">Ahorros</button>
+        <button class="tab-btn" onclick="showTab('metodo',this)" data-lang="tab_metodo">50/30/20</button>
+        <button class="tab-btn" onclick="showTab('casa',this)" data-lang="tab_casa">🏡 Casa</button>
       </div>
     </div>
   </div>
@@ -596,11 +596,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <!-- CASA -->
     <div class="panel" id="panel-casa">
       <div class="casa-sub-tabs">
-        <button class="casa-sub-btn active" onclick="showCasaTab('cdatos',this)">Datos</button>
-        <button class="casa-sub-btn" onclick="showCasaTab('cresultado',this)">Resultado</button>
-        <button class="casa-sub-btn" onclick="showCasaTab('camort',this)">Amort.</button>
-        <button class="casa-sub-btn" onclick="showCasaTab('cbuscar',this)">Buscar</button>
-        <button class="casa-sub-btn" onclick="showCasaTab('creporte',this)">Reporte</button>
+        <button class="casa-sub-btn active" onclick="showCasaTab('cdatos',this)" data-lang="ctab_datos">Datos</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('cresultado',this)" data-lang="ctab_resultado">Resultado</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('camort',this)" data-lang="ctab_amort">Amort.</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('cbuscar',this)" data-lang="ctab_buscar">Buscar</button>
+        <button class="casa-sub-btn" onclick="showCasaTab('creporte',this)" data-lang="ctab_creporte">Reporte</button>
       </div>
 
       <!-- DATOS -->
@@ -631,43 +631,52 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           </div>
         </div>
 
-        <div class="sec-label">Costos adicionales (% anual del valor)</div>
+        <div class="sec-label" data-lang="casa_costos">Costos adicionales (% anual o monto anual $)</div>
+        <div class="verdict-card info" style="margin-bottom:8px;padding:10px 14px;">
+          <div style="font-size:12px;color:var(--text2);line-height:1.5;">
+            <strong>💡 Auto-detección:</strong> Puedes poner <strong>% anual</strong> (ej: 2.62) <em>o</em> <strong>monto anual $</strong> (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.
+          </div>
+        </div>
         <div class="input-card">
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label">Property Tax</div>
-              <div class="input-sub">% anual — búscalo en Buscar</div>
+              <div class="input-label" data-lang="casa_tax">Property Tax</div>
+              <div class="input-sub" data-lang="casa_tax_sub">% anual ó monto anual $ — la app calcula automático</div>
               <div class="calc-derived" id="c_tax_calc">= $0/mes</div>
+              <div style="font-size:10px;color:var(--text3);" id="c_tax_mode">Detectando...</div>
             </div>
             <input class="field-input" type="number" id="c_tax" value="2.1" step="0.1" oninput="casaRecalc()">
-            <span class="field-unit">%</span>
+            <span class="field-unit" id="c_tax_unit">%/$</span>
           </div>
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label">Seguro de casa</div>
-              <div class="input-sub">% anual — promedio 0.5–1%</div>
+              <div class="input-label" data-lang="casa_seguro">Seguro de casa</div>
+              <div class="input-sub" data-lang="casa_seguro_sub">% anual ó monto anual $ — promedio 0.5–1%</div>
               <div class="calc-derived" id="c_seguro_calc">= $0/mes</div>
+              <div style="font-size:10px;color:var(--text3);" id="c_seguro_mode">Detectando...</div>
             </div>
             <input class="field-input" type="number" id="c_seguro" value="0.5" step="0.1" oninput="casaRecalc()">
-            <span class="field-unit">%</span>
+            <span class="field-unit" id="c_seguro_unit">%/$</span>
           </div>
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label">PMI</div>
-              <div class="input-sub">% del préstamo — si enganche &lt;20%</div>
+              <div class="input-label" data-lang="casa_pmi">Seguro hipotecario (PMI)</div>
+              <div class="input-sub" data-lang="casa_pmi_sub">% del préstamo ó monto anual $ — si enganche &lt;20%</div>
               <div class="calc-derived" id="c_pmi_calc">= $0/mes</div>
+              <div style="font-size:10px;color:var(--text3);" id="c_pmi_mode">Detectando...</div>
             </div>
             <input class="field-input" type="number" id="c_pmi" value="0.5" step="0.1" oninput="casaRecalc()">
-            <span class="field-unit">%</span>
+            <span class="field-unit" id="c_pmi_unit">%/$</span>
           </div>
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label">Mantenimiento</div>
-              <div class="input-sub">% anual — promedio 1%</div>
+              <div class="input-label" data-lang="casa_mant">Mantenimiento estimado</div>
+              <div class="input-sub" data-lang="casa_mant_sub">% anual ó monto anual $ — promedio 1%</div>
               <div class="calc-derived" id="c_mant_calc">= $0/mes</div>
+              <div style="font-size:10px;color:var(--text3);" id="c_mant_mode">Detectando...</div>
             </div>
             <input class="field-input" type="number" id="c_mant" value="1.0" step="0.1" oninput="casaRecalc()">
-            <span class="field-unit">%</span>
+            <span class="field-unit" id="c_mant_unit">%/$</span>
           </div>
         </div>
 
@@ -689,7 +698,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           </div>
         </div>
 
-        <button class="casa-calc-btn" onclick="showCasaTab('cresultado',document.querySelectorAll('.casa-sub-btn')[1])">Ver análisis completo →</button>
+        <button class="casa-calc-btn" data-lang="casa_btn" onclick="showCasaTab('cresultado',document.querySelectorAll('.casa-sub-btn')[1])">Ver análisis completo →</button>
 
         <div class="verdict-card info" style="margin-top:10px;">
           <div class="verdict-title">⚠️ Aviso importante</div>
@@ -793,7 +802,101 @@ var ADMIN_PASSWORD="admin2026finhome";
 // ============================================================
 
 var lang=localStorage.getItem('fh_lang')||'es';
-function toggleLang(){lang=lang==='es'?'en':'es';localStorage.setItem('fh_lang',lang);document.getElementById('langBtn').textContent=lang==='es'?'EN':'ES';}
+function toggleLang(){
+  lang=lang==='es'?'en':'es';
+  localStorage.setItem('fh_lang',lang);
+  applyLang();
+  recalculate(false);
+  casaRecalc();
+}
+
+function applyLang(){
+  document.getElementById('langBtn').textContent=lang==='es'?'EN':'ES';
+  document.querySelector('html').lang=lang;
+  // Static text translations
+  var translations={
+    // Header
+    'header_sub_text': lang==='es'?'Método 50/30/20 · Planificación compra de casa':'50/30/20 Method · Home purchase planning',
+    // Tabs
+    'tab_resumen': lang==='es'?'Resumen':'Summary',
+    'tab_ingresos': lang==='es'?'Ingresos':'Income',
+    'tab_gastos': lang==='es'?'Gastos':'Expenses',
+    'tab_ahorros': lang==='es'?'Ahorros':'Savings',
+    'tab_metodo': lang==='es'?'50/30/20':'50/30/20',
+    'tab_casa': lang==='es'?'🏡 Casa':'🏡 Home',
+    // Casa sub tabs
+    'ctab_datos': lang==='es'?'Datos':'Data',
+    'ctab_resultado': lang==='es'?'Resultado':'Result',
+    'ctab_amort': lang==='es'?'Amort.':'Amort.',
+    'ctab_buscar': lang==='es'?'Buscar':'Search',
+    'ctab_creporte': lang==='es'?'Reporte':'Report',
+    // Sections
+    'sec_panorama': lang==='es'?'Panorama general':'Overview',
+    'sec_proyeccion': lang==='es'?'Proyección de deudas':'Debt projection',
+    'sec_dist': lang==='es'?'Distribución':'Distribution',
+    'sec_alertas': lang==='es'?'Alertas':'Alerts',
+    'sec_salarios': lang==='es'?'Salarios semanales':'Weekly salaries',
+    'sec_pasivos': lang==='es'?'Ingresos pasivos':'Passive income',
+    'sec_nec': lang==='es'?'Necesidades — 50%':'Needs — 50%',
+    'sec_des': lang==='es'?'Deseos — 30%':'Wants — 30%',
+    'sec_aho': lang==='es'?'Inversiones & Ahorros — 20%':'Savings & Investments — 20%',
+    'sec_metodo': lang==='es'?'Método 50/30/20':'50/30/20 Method',
+    'sec_tips': lang==='es'?'Tips personalizados':'Personalized tips',
+    'sec_viabilidad': lang==='es'?'Viabilidad de la casa':'Home viability',
+    // Buttons
+    'btn_exp': lang==='es'?'Exportar':'Export',
+    'btn_imp': lang==='es'?'Importar':'Import',
+    'btn_salir': lang==='es'?'Salir':'Sign out',
+    'btn_integrantes': lang==='es'?'Integrantes':'Members',
+    // Casa labels
+    'casa_precio': lang==='es'?'Precio de la casa':'Home price',
+    'casa_precio_sub': lang==='es'?'Precio de lista':'List price',
+    'casa_enganche': lang==='es'?'Enganche':'Down payment',
+    'casa_tasa': lang==='es'?'Tasa de interés':'Interest rate',
+    'casa_tasa_sub': lang==='es'?'APR anual — búscala en Buscar':'APR annual — find it in Search',
+    'casa_plazo': lang==='es'?'Plazo':'Term',
+    'casa_costos': lang==='es'?'Costos adicionales (% anual o monto anual $)':'Additional costs (annual % or annual $ amount)',
+    'casa_tax': lang==='es'?'Property Tax':'Property Tax',
+    'casa_tax_sub': lang==='es'?'% anual ó monto anual $ — la app calcula automático':'Annual % or annual $ — app calculates automatically',
+    'casa_seguro': lang==='es'?'Seguro de casa':'Home insurance',
+    'casa_seguro_sub': lang==='es'?'% anual ó monto anual $ — promedio 0.5–1%':'Annual % or annual $ — avg 0.5–1%',
+    'casa_pmi': lang==='es'?'Seguro hipotecario (PMI)':'Private Mortgage Insurance (PMI)',
+    'casa_pmi_sub': lang==='es'?'% del préstamo ó monto anual $ — si enganche <20%':'% of loan or annual $ — if down payment <20%',
+    'casa_mant': lang==='es'?'Mantenimiento estimado':'Estimated maintenance',
+    'casa_mant_sub': lang==='es'?'% anual ó monto anual $ — promedio 1%':'Annual % or annual $ — avg 1%',
+    'casa_hoa': lang==='es'?'HOA':'HOA',
+    'casa_hoa_sub': lang==='es'?'Monto fijo mensual (si aplica)':'Fixed monthly amount (if applicable)',
+    'casa_extra': lang==='es'?'Pago extra mensual (opcional)':'Extra monthly payment (optional)',
+    'casa_extra_sub': lang==='es'?'Reduce años y ahorra en intereses':'Reduces years and saves on interest',
+    'casa_btn': lang==='es'?'Ver análisis completo →':'View full analysis →',
+    'casa_aviso': lang==='es'?'Este análisis es una estimación basada en datos públicos. Los valores reales pueden variar según tu lender, historial crediticio y condiciones del mercado.':'This analysis is an estimate based on public data. Actual values may vary by lender, credit history, and market conditions.',
+    'casa_fijo': lang==='es'?'Monto fijo mensual':'Fixed monthly amount',
+    // Search
+    'buscar_zona': lang==='es'?'Tu zona de búsqueda':'Your search area',
+    'buscar_hint': lang==='es'?'Escribe tu ciudad → da click al link → copia el dato → pégalo en la pestaña Datos.':'Type your city → click the link → copy the data → paste it in the Data tab.',
+    'buscar_links': lang==='es'?'Búsquedas inteligentes':'Smart searches',
+    // KPI labels
+    'kpi_ingreso': lang==='es'?'Ingreso mensual':'Monthly income',
+    'kpi_gastos': lang==='es'?'Total gastos':'Total expenses',
+    'kpi_sobrante': lang==='es'?'Sobrante/mes':'Surplus/month',
+    'kpi_ahorro': lang==='es'?'Ahorrando/mes':'Saving/month',
+    'kpi_casa': lang==='es'?'Casa + servicios':'Home + utilities',
+    'kpi_libera': lang==='es'?'Se libera pronto':'Released soon',
+  };
+
+  // Apply to all data-lang elements
+  document.querySelectorAll('[data-lang]').forEach(function(el){
+    var key=el.getAttribute('data-lang');
+    if(translations[key]) el.textContent=translations[key];
+  });
+
+  // Score labels
+  var scoreMap={
+    ok: lang==='es'?'Finanzas saludables':'Healthy finances',
+    warn: lang==='es'?'Presupuesto ajustado':'Tight budget',
+    bad: lang==='es'?'Presupuesto tenso':'Strained budget'
+  };
+}
 
 // ---- MODALS ----
 function openModal(id){document.getElementById(id).classList.add('active');}
@@ -1432,28 +1535,62 @@ function casaRecalc() {
   var precio   = Number(document.getElementById('c_precio').value)||0;
   var pctEng   = Number(document.getElementById('c_enganche').value)||0;
   var tasa     = Number(document.getElementById('c_tasa').value)||0;
-  var taxPct   = Number(document.getElementById('c_tax').value)||0;
-  var segPct   = Number(document.getElementById('c_seguro').value)||0;
-  var pmiPct   = Number(document.getElementById('c_pmi').value)||0;
-  var mantPct  = Number(document.getElementById('c_mant').value)||0;
-  var hoa      = Number(document.getElementById('c_hoa').value)||0;
-  var extra    = Number(document.getElementById('c_extra').value)||0;
-  var ingreso  = monthlyIncome() || 1;
+  var taxRaw  = Number(document.getElementById('c_tax').value)||0;
+  var segRaw  = Number(document.getElementById('c_seguro').value)||0;
+  var pmiRaw  = Number(document.getElementById('c_pmi').value)||0;
+  var mantRaw = Number(document.getElementById('c_mant').value)||0;
+  var hoa     = Number(document.getElementById('c_hoa').value)||0;
+  var extra   = Number(document.getElementById('c_extra').value)||0;
+  var ingreso = monthlyIncome() || 1;
 
   var engMonto  = precio * (pctEng/100);
   var principal = precio - engMonto;
 
-  // Monthly derived from %
-  var taxMes  = (precio * taxPct/100) / 12;
-  var segMes  = (precio * segPct/100) / 12;
-  var pmiMes  = pctEng < 20 ? (principal * pmiPct/100) / 12 : 0;
-  var mantMes = (precio * mantPct/100) / 12;
+  // Smart detection: <100 = percentage, >=100 = annual dollar amount
+  function smartMonthly(raw, base, isPmi) {
+    if(raw <= 0) return 0;
+    if(raw < 100) {
+      // It's a percentage
+      return (base * raw/100) / 12;
+    } else {
+      // It's an annual dollar amount
+      return raw / 12;
+    }
+  }
 
-  // Show derived amounts in Datos tab
-  var tc = document.getElementById('c_tax_calc');    if(tc) tc.textContent = '= '+casaFmt(taxMes)+'/mes';
-  var sc = document.getElementById('c_seguro_calc'); if(sc) sc.textContent = '= '+casaFmt(segMes)+'/mes';
-  var pc = document.getElementById('c_pmi_calc');    if(pc) pc.textContent = pctEng<20 ? '= '+casaFmt(pmiMes)+'/mes' : '= $0 (enganche ≥20%)';
-  var mc = document.getElementById('c_mant_calc');   if(mc) mc.textContent = '= '+casaFmt(mantMes)+'/mes';
+  function smartLabel(raw, mes, lang) {
+    var isEs = lang === 'es';
+    if(raw < 100) {
+      return (isEs ? 'Modo % — ' : 'Mode % — ') + raw + '% = ' + casaFmt(mes) + (isEs ? '/mes' : '/mo');
+    } else {
+      return (isEs ? 'Modo $ anual — $' : 'Mode $ annual — $') + Math.round(raw) + ' = ' + casaFmt(mes) + (isEs ? '/mes' : '/mo');
+    }
+  }
+
+  function smartUnit(raw) { return raw < 100 ? '%' : '$'; }
+
+  var taxMes  = smartMonthly(taxRaw, precio, false);
+  var segMes  = smartMonthly(segRaw, precio, false);
+  var pmiMes  = pctEng < 20 ? smartMonthly(pmiRaw, principal, true) : 0;
+  var mantMes = smartMonthly(mantRaw, precio, false);
+
+  // Show derived amounts + mode indicator
+  var tc = document.getElementById('c_tax_calc');    if(tc) tc.textContent = '= '+casaFmt(taxMes)+(lang==='es'?'/mes':'/mo');
+  var sc = document.getElementById('c_seguro_calc'); if(sc) sc.textContent = '= '+casaFmt(segMes)+(lang==='es'?'/mes':'/mo');
+  var pc = document.getElementById('c_pmi_calc');    if(pc) pc.textContent = pctEng<20 ? '= '+casaFmt(pmiMes)+(lang==='es'?'/mes':'/mo') : (lang==='es'?'= $0 (enganche ≥20%)':'= $0 (down payment ≥20%)');
+  var mc = document.getElementById('c_mant_calc');   if(mc) mc.textContent = '= '+casaFmt(mantMes)+(lang==='es'?'/mes':'/mo');
+
+  // Mode labels
+  var tm = document.getElementById('c_tax_mode');    if(tm) tm.textContent = smartLabel(taxRaw, taxMes, lang);
+  var sm = document.getElementById('c_seguro_mode'); if(sm) sm.textContent = smartLabel(segRaw, segMes, lang);
+  var pm = document.getElementById('c_pmi_mode');    if(pm) pm.textContent = pctEng<20 ? smartLabel(pmiRaw, pmiMes, lang) : '';
+  var mm = document.getElementById('c_mant_mode');   if(mm) mm.textContent = smartLabel(mantRaw, mantMes, lang);
+
+  // Unit indicators
+  var tu = document.getElementById('c_tax_unit');    if(tu) tu.textContent = smartUnit(taxRaw);
+  var su = document.getElementById('c_seguro_unit'); if(su) su.textContent = smartUnit(segRaw);
+  var pu = document.getElementById('c_pmi_unit');    if(pu) pu.textContent = smartUnit(pmiRaw);
+  var mu = document.getElementById('c_mant_unit');   if(mu) mu.textContent = smartUnit(mantRaw);
 
   var pi       = casaCalcPI(principal, tasa, casaPlazo);
   var totalInt = pi * casaPlazo*12 - principal;
@@ -1469,7 +1606,7 @@ function casaRecalc() {
   casaSetText('c_totalint', casaFmt(totalInt));
   casaSetText('c_costoreal', casaFmt(costoReal));
   casaSetText('c_engmonto', casaFmt(engMonto));
-  casaSetText('c_totalpag', casaFmt(totalpag));
+  casaSetText('c_totalpag', casaFmt(totalpag)); var ps=document.getElementById('c_plazo_sub'); if(ps) ps.textContent='En '+casaPlazo+' años';
 
   var pctEl = document.getElementById('c_pct');
   if(pctEl){pctEl.textContent=casaFmtPct(pctIng);pctEl.className='kpi-value '+(pctIng<=28?'green':pctIng<=36?'yellow':'red');}
@@ -1592,17 +1729,40 @@ function casaSection(title, rows) {
   return html;
 }
 
-var casaSearchQueries = [
-  {icon:'🏦',bg:'rgba(0,122,255,.1)',title:'Tasa hipotecaria actual',query:'mortgage interest rate {zona} 2026 average',desc:'APR anual — pégalo en Tasa de interés'},
-  {icon:'🏛',bg:'rgba(88,86,214,.1)',title:'Property Tax Rate',query:'property tax rate {zona} Illinois 2026 percentage',desc:'% anual — pégalo en Property Tax'},
-  {icon:'🛡',bg:'rgba(52,199,89,.1)',title:'Home insurance rate',query:'average home insurance rate {zona} Illinois 2026 percentage',desc:'% anual — pégalo en Seguro de casa'},
-  {icon:'🏘',bg:'rgba(255,149,0,.1)',title:'HOA fees promedio',query:'HOA fees average {zona} Illinois monthly',desc:'Monto mensual fijo — pégalo en HOA'},
-  {icon:'📐',bg:'rgba(255,59,48,.1)',title:'Precio por sq ft',query:'average home price per square foot {zona} Illinois 2026',desc:'Para comparar si el precio es justo'},
-  {icon:'📊',bg:'rgba(50,173,230,.1)',title:'Mercado inmobiliario',query:'real estate market {zona} Illinois 2026 trends',desc:'Tendencias y precios de la zona'},
-];
+function getCasaSearchQueries() {
+  var isEs = lang === 'es';
+  return [
+    {icon:'🏦',bg:'rgba(0,122,255,.1)',
+     title:isEs?'Tasa hipotecaria actual':'Current mortgage rate',
+     query:'mortgage interest rate {zona} 2026 average',
+     desc:isEs?'APR anual — pégalo en Tasa de interés':'Annual APR — paste in Interest Rate'},
+    {icon:'🏛',bg:'rgba(88,86,214,.1)',
+     title:'Property Tax Rate',
+     query:'property tax rate {zona} Illinois 2026 percentage annual',
+     desc:isEs?'% anual ó monto anual $ — pégalo en Property Tax':'Annual % or annual $ — paste in Property Tax'},
+    {icon:'🛡',bg:'rgba(52,199,89,.1)',
+     title:isEs?'Seguro de casa':'Home insurance rate',
+     query:'average home insurance cost {zona} Illinois 2026 annual',
+     desc:isEs?'% anual ó monto anual $ — pégalo en Seguro de casa':'Annual % or annual $ — paste in Home Insurance'},
+    {icon:'🏘',bg:'rgba(255,149,0,.1)',
+     title:isEs?'HOA fees promedio':'Average HOA fees',
+     query:'HOA fees average {zona} Illinois monthly',
+     desc:isEs?'Monto mensual fijo — pégalo en HOA':'Fixed monthly amount — paste in HOA'},
+    {icon:'📐',bg:'rgba(255,59,48,.1)',
+     title:isEs?'Precio por sq ft':'Price per sq ft',
+     query:'average home price per square foot {zona} Illinois 2026',
+     desc:isEs?'Para comparar si el precio es justo':'To compare if the price is fair'},
+    {icon:'📊',bg:'rgba(50,173,230,.1)',
+     title:isEs?'Mercado inmobiliario':'Real estate market',
+     query:'real estate market {zona} Illinois 2026 trends',
+     desc:isEs?'Tendencias y precios de la zona':'Area trends and prices'},
+  ];
+}
+var casaSearchQueries = getCasaSearchQueries();
 
 function updateCasaLinks() {
-  var zona = document.getElementById('c_zona').value.trim() || 'tu zona';
+  casaSearchQueries = getCasaSearchQueries();
+  var zona = document.getElementById('c_zona').value.trim() || (lang==='es'?'tu zona':'your area');
   var el = document.getElementById('c_searchLinks'); if(!el) return;
   el.innerHTML = casaSearchQueries.map(function(q){
     var query = q.query.replace('{zona}', zona);
