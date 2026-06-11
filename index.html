@@ -181,24 +181,24 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .chart-wrap{position:relative;height:180px;}
 
 /* METHOD */
-.method-card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
-.m-row{margin-bottom:16px;}
+.method-card{background:var(--surface);border-radius:var(--radius);padding:20px 16px;box-shadow:var(--shadow-sm);margin-bottom:12px;}
+.m-row{margin-bottom:22px;padding:0 2px;}
 .m-row:last-child{margin-bottom:0;}
-.m-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
-.m-name{font-size:14px;font-weight:600;}
+.m-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.m-name{font-size:15px;font-weight:700;}
 .m-vals{font-size:12px;color:var(--text3);font-variant-numeric:tabular-nums;}
-.m-bar-bg{height:8px;background:var(--bg);border-radius:8px;overflow:hidden;}
-.m-bar-fill{height:100%;border-radius:8px;transition:width .5s cubic-bezier(.4,0,.2,1);}
-.m-note{font-size:11px;color:var(--text3);margin-top:4px;}
+.m-bar-bg{height:14px;background:var(--bg);border-radius:8px;overflow:hidden;margin:6px 0;}
+.m-bar-fill{height:100%;border-radius:8px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:4px;}
+.m-note{font-size:12px;color:var(--text3);margin-top:2px;}
 
 /* TIPS */
-.tip-card{border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;}
+.tip-card{border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;}
 .tip-card.ok{background:rgba(52,199,89,.09);}
 .tip-card.warn{background:rgba(255,149,0,.09);}
 .tip-card.info{background:rgba(0,122,255,.07);}
 .tip-card.danger{background:rgba(255,59,48,.08);}
-.tip-icon{font-size:17px;flex-shrink:0;}
-.tip-title{font-size:13px;font-weight:600;}
+.tip-icon{flex-shrink:0;display:flex;align-items:center;margin-top:1px;}
+.tip-title{font-size:13px;font-weight:500;line-height:1.5;color:var(--text);}
 
 /* ALERT */
 .alert{border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;font-size:13px;line-height:1.5;display:flex;gap:10px;align-items:flex-start;}
@@ -313,6 +313,15 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .score-pill.warn{background:rgba(255,149,0,.12);color:#a05800;}
 .score-pill.danger{background:rgba(255,59,48,.12);color:#c0160f;}
 .casa-calc-btn{width:100%;background:var(--accent);border:none;border-radius:12px;padding:14px;color:#fff;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;box-shadow:0 4px 12px rgba(0,122,255,.25);}
+.casa-action-row{display:flex;gap:8px;margin-top:8px;}
+.casa-btn-save{flex:1;background:var(--surface);border:1.5px solid var(--accent);border-radius:10px;padding:10px 8px;color:var(--accent);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.casa-btn-dash{flex:1;background:linear-gradient(135deg,#34c759,#30b350);border:none;border-radius:10px;padding:10px 8px;color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.saved-analysis-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.saved-analysis-name{font-weight:600;font-size:13px;color:var(--text);}
+.saved-analysis-val{font-size:12px;color:var(--text2);margin-top:2px;}
+.saved-analysis-btns{display:flex;gap:6px;}
+.saved-load-btn{background:var(--accent);border:none;border-radius:7px;padding:5px 10px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;}
+.saved-del-btn{background:var(--bg);border:none;border-radius:7px;padding:5px 8px;color:#ff3b30;font-size:11px;font-weight:600;cursor:pointer;}
 
 
 /* DEBT BREAKDOWN */
@@ -703,6 +712,18 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         </div>
 
         <button class="casa-calc-btn" data-lang="casa_btn" onclick="showCasaTab('cresultado',document.querySelectorAll('.casa-sub-btn')[1])">Ver análisis completo →</button>
+        <div class="casa-action-row">
+          <button class="casa-btn-save" onclick="saveAnalysis()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span id="saveBtnLabel">Guardar estimación</span>
+          </button>
+          <button class="casa-btn-dash" onclick="sendToDashboard()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span id="dashBtnLabel">Pasar al dashboard</span>
+          </button>
+        </div>
+        <!-- Saved analyses list -->
+        <div id="savedAnalysesList" style="margin-top:14px;"></div>
 
         <div class="verdict-card info" style="margin-top:10px;">
           <div class="verdict-title" id="avisoTitle">⚠️ Aviso importante</div>
@@ -723,7 +744,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           <div class="kpi"><div class="kpi-label" data-lang="c_costo_lbl">Costo real/mes</div><div class="kpi-value" id="c_costoreal">—</div><div class="kpi-sub" data-lang="c_costo_sub">Todos los gastos</div></div>
           <div class="kpi"><div class="kpi-label" data-lang="c_pct_lbl">% del ingreso</div><div class="kpi-value" id="c_pct">—</div><div class="kpi-sub" data-lang="c_pct_sub">Meta: &lt;28%</div></div>
           <div class="kpi"><div class="kpi-label" data-lang="c_eng_lbl">Enganche $</div><div class="kpi-value green" id="c_engmonto">—</div><div class="kpi-sub" data-lang="c_eng_sub">Down payment</div></div>
-          <div class="kpi"><div class="kpi-label" data-lang="c_total_lbl">Total pagado</div><div class="kpi-value" id="c_totalpag">—</div><div class="kpi-sub">En '+plazo+' años</div></div>
+          <div class="kpi"><div class="kpi-label" data-lang="c_total_lbl">Total pagado</div><div class="kpi-value" id="c_totalpag">—</div><div class="kpi-sub" id="c_plazo_sub2">En 30 años</div></div>
         </div>
         <div class="sec-label" data-lang="sec_diag">Diagnóstico</div>
         <div id="c_diagnostico"></div>
@@ -1017,18 +1038,22 @@ function applyLang(){
   setSelectOpts('tag-necesidades', es?['fijo','temporal']:['fixed','temporary']);
   setSelectOpts('tag-deseos', es?['variable','temporal']:['variable','temporary']);
   setSelectOpts('tag-ahorros', es?['inversión','ahorro']:['investment','savings']);
-  // Person selects - rebuild with current members
-  ['person-necesidades','person-deseos','person-ahorros'].forEach(function(id){
-    var sel=document.getElementById(id);
-    if(!sel)return;
-    var prev=sel.value;
-    sel.innerHTML='<option value="">'+(es?'Todos':'Everyone')+'</option>';
-    state.members.forEach(function(m){
-      var opt=document.createElement('option');
-      opt.value=m.name;opt.textContent=m.name;sel.appendChild(opt);
+  // Person selects - rebuild with current members (only if elements exist)
+  try {
+    ['person-necesidades','person-deseos','person-ahorros'].forEach(function(id){
+      var sel=document.getElementById(id);
+      if(!sel)return;
+      var prev=sel.value;
+      sel.innerHTML='<option value="">'+(es?'Todos':'Everyone')+'</option>';
+      if(state && state.members) {
+        state.members.forEach(function(m){
+          var opt=document.createElement('option');
+          opt.value=m.name;opt.textContent=m.name;sel.appendChild(opt);
+        });
+      }
+      sel.value=prev;
     });
-    sel.value=prev;
-  });
+  } catch(e){}
 
   // Update member button label
   var membLbl = document.getElementById('membersLabel');
@@ -1055,23 +1080,31 @@ function applyLang(){
   // Update search how-to box
   var howto = document.querySelector('.verdict-desc');
 
-  // Update row tags that are already rendered
-  document.querySelectorAll('.row-tag.temp').forEach(function(el){ el.textContent = es?'deuda':'debt'; });
-  document.querySelectorAll('.row-tag.savings').forEach(function(el){ el.textContent = es?'inv.':'inv.'; });
-  document.querySelectorAll('.row-person').forEach(function(el){
-    // keep person names as-is
-  });
+  // Update row tags that are already rendered (safe - querySelectorAll never throws)
+  try {
+    document.querySelectorAll('.row-tag.temp').forEach(function(el){ el.textContent = es?'deuda':'debt'; });
+    document.querySelectorAll('.row-tag.savings').forEach(function(el){ el.textContent = es?'inv.':'inv.'; });
+  } catch(e){}
+
+  // Update save/dash button labels
+  var saveLbl=document.getElementById('saveBtnLabel');
+  if(saveLbl)saveLbl.textContent=es?'Guardar estimación':'Save estimate';
+  var dashLbl=document.getElementById('dashBtnLabel');
+  if(dashLbl)dashLbl.textContent=es?'Pasar al dashboard':'Send to dashboard';
 
   // Update search links with new lang
+  if(currentEmail)renderSavedAnalyses();
   updateCasaLinks();
 
   // Re-render dynamic content only if app is visible
-  if(document.getElementById('screenApp') && 
-     document.getElementById('screenApp').classList.contains('active')) {
-    updateProjection();
-    recalculate(true);
-    casaRecalc();
-  }
+  try {
+    var appEl=document.getElementById('screenApp');
+    if(appEl && appEl.classList.contains('active')) {
+      if(typeof updateProjection==='function') updateProjection();
+      if(typeof recalculate==='function') recalculate(true);
+      if(typeof casaRecalc==='function') casaRecalc();
+    }
+  } catch(e){ console.log('applyLang render error:',e); }
 }
 
 // ---- MODALS ----
@@ -1118,6 +1151,7 @@ function doLogin(email,code){
 }
 
 function loadAndShow(email){
+  currentEmail=email;
   loadData(email);
   showScreen('screenApp');
   var te=document.getElementById('toolbarEmail');if(te)te.textContent=email;
@@ -1167,6 +1201,7 @@ function finishOnboarding(){var sess=JSON.parse(localStorage.getItem('fh_session
 
 // ---- STATE ----
 var state={members:[],passive:[],necesidades:[],deseos:[],ahorros:[],nid:100};
+var currentEmail='';
 var pieInst=null,barInst=null;
 
 function fmt(v){return '$'+Math.round(Number(v)||0).toLocaleString('en-US');}
@@ -1527,24 +1562,51 @@ function renderScore(total,nec,des,aho,sob,t50,t30,t20){
 function renderCharts(nec,des,aho,sob,total,t50,t30,t20){
   var pc=document.getElementById('pieChart'),bc=document.getElementById('barChart');
   if(!pc||!bc)return;
-  if(pieInst){try{pieInst.destroy();}catch(e){}}
-  if(barInst){try{barInst.destroy();}catch(e){}}
   var sa=Math.max(0,sob);
   var esC=lang==='es';
-  pieInst=new Chart(pc.getContext('2d'),{type:'doughnut',
-    data:{labels:[esC?'Necesidades':'Needs',esC?'Deseos':'Wants',esC?'Ahorros':'Savings',esC?'Sobrante':'Surplus'],datasets:[{data:[nec,des,aho,sa],backgroundColor:['#007aff','#5856d6','#34c759','#e5e5ea'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:'#8e8e93',font:{size:10},padding:8,boxWidth:10}},
-      tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw)+' ('+(total>0?((c.raw/total)*100).toFixed(1):0)+'%)';}}}}}
-  });
-  barInst=new Chart(bc.getContext('2d'),{type:'bar',
-    data:{labels:[esC?'Necesidades':'Needs',esC?'Deseos':'Wants',esC?'Ahorros':'Savings'],datasets:[
-      {label:'Real',data:[nec,des,aho],backgroundColor:['rgba(0,122,255,.8)','rgba(88,86,214,.8)','rgba(52,199,89,.8)'],borderRadius:8},
-      {label:esC?'Meta':'Target',data:[t50,t30,t20],backgroundColor:'rgba(0,0,0,.06)',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderRadius:8}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#8e8e93',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw);}}}},
-      scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e8e93',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e8e93',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(1)+'k';}}}}}
-  });
+  var pieLabels=[esC?'Necesidades':'Needs',esC?'Deseos':'Wants',esC?'Ahorros':'Savings',esC?'Sobrante':'Surplus'];
+  var barLabels=[esC?'Necesidades':'Needs',esC?'Deseos':'Wants',esC?'Ahorros':'Savings'];
+  var ct=total;
+  if(pieInst){
+    try{
+      pieInst.data.labels=pieLabels;
+      pieInst.data.datasets[0].data=[nec,des,aho,sa];
+      pieInst.update('none');
+    }catch(e){try{pieInst.destroy();}catch(e2){} pieInst=null;}
+  }
+  if(barInst){
+    try{
+      barInst.data.labels=barLabels;
+      barInst.data.datasets[0].data=[nec,des,aho];
+      barInst.data.datasets[0].label=esC?'Real':'Actual';
+      barInst.data.datasets[1].data=[t50,t30,t20];
+      barInst.data.datasets[1].label=esC?'Meta':'Target';
+      barInst.update('none');
+    }catch(e){try{barInst.destroy();}catch(e2){} barInst=null;}
+  }
+  if(!pieInst){
+    try{
+      pieInst=new Chart(pc.getContext('2d'),{type:'doughnut',
+        data:{labels:pieLabels,datasets:[{data:[nec,des,aho,sa],backgroundColor:['#007aff','#5856d6','#34c759','#e5e5ea'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:'#8e8e93',font:{size:10},padding:8,boxWidth:10}},
+          tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw)+' ('+(ct>0?((c.raw/ct)*100).toFixed(1):0)+'%)';}}}}
+        }
+      });
+    }catch(e){pieInst=null;}
+  }
+  if(!barInst){
+    try{
+      barInst=new Chart(bc.getContext('2d'),{type:'bar',
+        data:{labels:barLabels,datasets:[
+          {label:esC?'Real':'Actual',data:[nec,des,aho],backgroundColor:['rgba(0,122,255,.8)','rgba(88,86,214,.8)','rgba(52,199,89,.8)'],borderRadius:8},
+          {label:esC?'Meta':'Target',data:[t50,t30,t20],backgroundColor:'rgba(0,0,0,.06)',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderRadius:8}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{labels:{color:'#8e8e93',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw);}}}},
+          scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e8e93',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e8e93',font:{size:10},callback:function(v){return '$'+(v/1000).toFixed(1)+'k';}}}}}
+      });
+    }catch(e){barInst=null;}
+  }
 }
 
 function renderAlerts(total,nec,des,aho,sob,t50,t30,t20){
@@ -1558,11 +1620,23 @@ function renderAlerts(total,nec,des,aho,sob,t50,t30,t20){
   if(tempTotal>0)html+=alertEl('info','[D]',esA?'En '+months+' meses se liberan ~'+fmt(tempTotal)+'/mes. Sobrante futuro: '+fmt(sob+tempTotal)+'/mes.':'In '+months+' months ~'+fmt(tempTotal)+'/mo will be freed. Future surplus: '+fmt(sob+tempTotal)+'/mo.');
   el.innerHTML=html;
 }
-function alertEl(cls,icon,msg){return '<div class="alert '+cls+'"><div class="alert-icon">'+icon+'</div><div>'+msg+'</div></div>';}
+function svgIcon(type){
+  var icons={
+    'ok-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>',
+    'warn-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    'danger-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    'info-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    'star-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="#34c759" stroke="#34c759" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  };
+  return icons[type]||'<span>•</span>';
+}
+function alertEl(cls,icon,msg){return '<div class="alert '+cls+'"><div class="alert-icon">'+svgIcon(icon)+'</div><div>'+msg+'</div></div>';}
 
 function renderTips(total,nec,des,aho,sob,t50,t30,t20){
-  var el=document.getElementById('tipsContainer');if(!el)return;
-  var months=parseInt(document.getElementById('projMonths').value)||3;
+  var el=document.getElementById('tipsContainer');
+  if(!el){return;}
+  var pmEl=document.getElementById('projMonths');
+  var months=pmEl?parseInt(pmEl.value)||3:3;
   var tempTotal=getTempTotal();
   var hipotecaT=state.necesidades.find(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')!==-1;});var hipMontoT=hipotecaT?Number(hipotecaT.amount||0):0;var mortP=((total>0&&hipMontoT>0?hipMontoT/total:0)*100).toFixed(1);
   var ahoP=((total>0?aho/total:0)*100).toFixed(1);
@@ -1571,18 +1645,24 @@ function renderTips(total,nec,des,aho,sob,t50,t30,t20){
   var esP=lang==='es';
   var hipOver=2068/Math.max(total,1)>.35;
   var ahoLow=aho/Math.max(total,1)<.15;
-  html+=tipEl(hipOver?'warn':'ok',hipOver?'[H]':'[ok]',esP?(hipOver?'Tu hipoteca representa el '+mortP+'% del ingreso — lo ideal es menos del 30%.':'Tu hipoteca representa el '+mortP+'% del ingreso — rango saludable.'):(hipOver?'Your mortgage is '+mortP+'% of income — ideally under 30%.':'Your mortgage is '+mortP+'% of income — healthy range.'));
-  html+=tipEl(ahoLow?'warn':'ok',ahoLow?'[$]':'[^]',esP?(ahoLow?'Ahorras el '+ahoP+'%. Intenta llegar al 20%.':'¡Ahorras el '+ahoP+'% del ingreso! Buen ritmo.'):(ahoLow?'You are saving '+ahoP+'%. Try to reach 20%.':'You are saving '+ahoP+'% of income! Great pace.'));
-  if(tempTotal>0)html+=tipEl('info','[>]',esP?'Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu ahorro podría subir a '+fmt(aho+tempTotal)+'/mes ('+newAhoP+'%).':'By freeing '+fmt(tempTotal)+'/mo in '+months+' months, savings could rise to '+fmt(aho+tempTotal)+'/mo ('+newAhoP+'%).');
-  html+=tipEl('info','[s]',esP?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des+aho)*6)+').');
-  html+=tipEl(des>t30?'warn':'ok','[T]',esP?(des>t30?'Tus deseos ('+fmt(des)+') superan la meta del 30% ('+fmt(t30)+').':'Tus deseos están dentro del 30% — buen control.'):(des>t30?'Your wants ('+fmt(des)+') exceed the 30% target ('+fmt(t30)+').':'Your wants are within 30% — good control.'));
+  html+=tipEl(hipOver?'warn':'ok','',esP?(hipOver?'Tu hipoteca representa el '+mortP+'% del ingreso — lo ideal es menos del 30%.':'Tu hipoteca representa el '+mortP+'% del ingreso — rango saludable.'):(hipOver?'Your mortgage is '+mortP+'% of income — ideally under 30%.':'Your mortgage is '+mortP+'% of income — healthy range.'));
+  html+=tipEl(ahoLow?'warn':'ok','',esP?(ahoLow?'Ahorras el '+ahoP+'%. Intenta llegar al 20%.':'¡Ahorras el '+ahoP+'% del ingreso! Buen ritmo.'):(ahoLow?'You are saving '+ahoP+'%. Try to reach 20%.':'You are saving '+ahoP+'% of income! Great pace.'));
+  if(tempTotal>0)html+=tipEl('info','',esP?'Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu ahorro podría subir a '+fmt(aho+tempTotal)+'/mes ('+newAhoP+'%).':'By freeing '+fmt(tempTotal)+'/mo in '+months+' months, savings could rise to '+fmt(aho+tempTotal)+'/mo ('+newAhoP+'%).');
+  html+=tipEl('info','',esP?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des+aho)*6)+').');
+  html+=tipEl(des>t30?'warn':'ok','',esP?(des>t30?'Tus deseos ('+fmt(des)+') superan la meta del 30% ('+fmt(t30)+').':'Tus deseos están dentro del 30% — buen control.'):(des>t30?'Your wants ('+fmt(des)+') exceed the 30% target ('+fmt(t30)+').':'Your wants are within 30% — good control.'));
   el.innerHTML=html;
 }
-function tipEl(cls,icon,title){return '<div class="tip-card '+cls+'"><div class="tip-icon">'+icon+'</div><div class="tip-title">'+title+'</div></div>';}
+function tipIcon(cls){
+  var c=cls==='ok'?'#34c759':cls==='warn'?'#ff9500':cls==='danger'?'#ff3b30':'#007aff';
+  return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+}
+function tipEl(cls,icon,title){return '<div class="tip-card '+cls+'"><div class="tip-icon">'+tipIcon(cls)+'</div><div class="tip-title">'+title+'</div></div>';}
 
 function renderViability(total,nec,sob){
-  var el=document.getElementById('viabilityCard');if(!el)return;
-  var months=parseInt(document.getElementById('projMonths').value)||3;
+  var el=document.getElementById('viabilityCard');
+  if(!el){return;}
+  var pmEl2=document.getElementById('projMonths');
+  var months=pmEl2?parseInt(pmEl2.value)||3:3;
   var tempTotal=getTempTotal();
   var hipotecaV=state.necesidades.find(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')!==-1;});var hipMontoV=hipotecaV?Number(hipotecaV.amount||0):0;var mp=((total>0&&hipMontoV>0?hipMontoV/total:0)*100).toFixed(1);
   var hp=((total>0&&nec>0?nec/total:0)*100).toFixed(1);
@@ -1808,7 +1888,7 @@ function casaRecalc() {
   casaSetText('c_totalint', casaFmt(totalInt));
   casaSetText('c_costoreal', casaFmt(costoReal));
   casaSetText('c_engmonto', casaFmt(engMonto));
-  casaSetText('c_totalpag', casaFmt(totalpag)); var ps=document.getElementById('c_plazo_sub'); if(ps) ps.textContent='En '+casaPlazo+' años';
+  casaSetText('c_totalpag', casaFmt(totalpag)); var ps=document.getElementById('c_plazo_sub'); if(ps) ps.textContent=(lang==='es'?'En ':'In ')+casaPlazo+(lang==='es'?' años':' years'); var ps2=document.getElementById('c_plazo_sub2'); if(ps2) ps2.textContent=(lang==='es'?'En ':'In ')+casaPlazo+(lang==='es'?' años':' years');
 
   var pctEl = document.getElementById('c_pct');
   if(pctEl){pctEl.textContent=casaFmtPct(pctIng);pctEl.className='kpi-value '+(pctIng<=28?'green':pctIng<=36?'yellow':'red');}
@@ -1862,10 +1942,14 @@ function casaRenderDiag(pctIng, pctEng, tasa, precio, pi, costoReal, ingreso, pm
   else if(tasa<=7) items.push({cls:'warn',icon:'[C]',title:(esD?'Tasa en rango normal':'Rate in normal range')+' ('+tasa+'%)',desc:esD?'Promedio del mercado 2026. Compara con al menos 3 lenders antes de cerrar.':'2026 market average. Compare with at least 3 lenders before closing.'});
   else items.push({cls:'danger',icon:'[!]',title:(esD?'Tasa elevada':'High rate')+' ('+tasa+'%)',desc:esD?'Pagarás significativamente más en intereses. Considera esperar mejores tasas o negociar con el lender.':'You will pay significantly more in interest. Consider waiting for better rates or negotiating with your lender.'});
 
-  items.push({cls:'info',icon:'[H]',title:(esD?'Costo real mensual: ':'Real monthly cost: ')+casaFmt(costoReal),desc:esD?'Esto incluye hipoteca, impuestos, seguro, PMI y mantenimiento estimado. Es lo que realmente sale de tu bolsillo cada mes.':'This includes mortgage, taxes, insurance, PMI and estimated maintenance. What really comes out of your pocket each month.'});
+  items.push({cls:'info',icon:'info',title:(esD?'Costo real mensual: ':'Real monthly cost: ')+casaFmt(costoReal),desc:esD?'Esto incluye hipoteca, impuestos, seguro, PMI y mantenimiento estimado. Es lo que realmente sale de tu bolsillo cada mes.':'This includes mortgage, taxes, insurance, PMI and estimated maintenance. What really comes out of your pocket each month.'});
 
   el.innerHTML = items.map(function(i){
-    return '<div class="verdict-card '+i.cls+'"><div class="verdict-title">'+i.icon+' '+i.title+'</div><div class="verdict-desc">'+i.desc+'</div></div>';
+    var ic=i.cls==='ok'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>':
+           i.cls==='warn'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>':
+           i.cls==='danger'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>':
+           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    return '<div class="verdict-card '+i.cls+'"><div class="verdict-title">'+ic+' '+i.title+'</div><div class="verdict-desc">'+i.desc+'</div></div>';
   }).join('');
 }
 
@@ -1921,8 +2005,11 @@ function casaRenderReporte(precio, engMonto, principal, pi, piti, costoReal, tot
   el.innerHTML = html;
 }
 
+function sectionIcon(color,path){return '<svg style="display:inline;vertical-align:middle;margin-right:6px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2.5">'+path+'</svg>';}
 function casaSection(title, rows) {
-  var html = '<div class="report-sect"><div class="report-sect-head">'+title+'</div>';
+  // Clean up text badges from title
+  var cleanTitle=title.replace(/\[[^\]]+\]\s*/,'');
+  var html = '<div class="report-sect"><div class="report-sect-head">'+cleanTitle+'</div>';
   rows.forEach(function(r){
     if(!r[1]) {
       html += '<div style="padding:8px 16px;font-size:11px;color:var(--text3);font-style:italic;">'+r[0]+'</div>';
@@ -1977,6 +2064,109 @@ function updateCasaLinks() {
       '<div class="search-info"><div class="search-title">'+q.title+'</div><div class="search-desc">'+q.desc+'</div></div>'+
       '<span style="font-size:18px;color:var(--text3);">›</span></a>';
   }).join('');
+}
+
+// ---- SAVE ANALYSIS FUNCTIONS ----
+function saveAnalysis(){
+  var es=lang==='es';
+  var precio=Number((document.getElementById('c_precio')||{value:0}).value)||0;
+  if(precio===0){alert(es?'Ingresa el precio de la casa primero.':'Enter the home price first.');return;}
+  var name=prompt(es?'Nombre para esta estimación (ej: Casa Hometown $247k):':'Name for this estimate (e.g. Hometown Home $247k):');
+  if(!name||!name.trim())return;
+  var piti=document.getElementById('c_piti');
+  var pitiVal=piti?piti.textContent:'—';
+  var analysis={
+    id:Date.now(),
+    name:name.trim(),
+    precio:precio,
+    piti:pitiVal,
+    enganche:(document.getElementById('c_enganche')||{value:10}).value,
+    tasa:(document.getElementById('c_tasa')||{value:6.8}).value,
+    plazo:casaPlazo||30,
+    tax:(document.getElementById('c_tax')||{value:2.1}).value,
+    seguro:(document.getElementById('c_seguro')||{value:0.5}).value,
+    pmi:(document.getElementById('c_pmi')||{value:0.5}).value,
+    mant:(document.getElementById('c_mant')||{value:1}).value,
+    hoa:(document.getElementById('c_hoa')||{value:0}).value,
+    extra:(document.getElementById('c_extra')||{value:0}).value,
+    date:new Date().toLocaleDateString()
+  };
+  var saved=JSON.parse(localStorage.getItem('fh_analyses_'+currentEmail)||'[]');
+  saved.push(analysis);
+  localStorage.setItem('fh_analyses_'+currentEmail,JSON.stringify(saved));
+  renderSavedAnalyses();
+  alert(es?'Estimación guardada: '+name:'Estimate saved: '+name);
+}
+
+function loadAnalysis(id){
+  var saved=JSON.parse(localStorage.getItem('fh_analyses_'+currentEmail)||'[]');
+  var a=saved.find(function(x){return x.id===id;});
+  if(!a)return;
+  var setVal=function(elId,val){var el=document.getElementById(elId);if(el)el.value=val;};
+  setVal('c_precio',a.precio);
+  setVal('c_enganche',a.enganche);
+  setVal('c_tasa',a.tasa);
+  setVal('c_tax',a.tax);
+  setVal('c_seguro',a.seguro);
+  setVal('c_pmi',a.pmi);
+  setVal('c_mant',a.mant);
+  setVal('c_hoa',a.hoa);
+  setVal('c_extra',a.extra);
+  casaPlazo=Number(a.plazo)||30;
+  document.querySelectorAll('.seg-btn').forEach(function(b){
+    b.classList.toggle('active',b.textContent.indexOf(casaPlazo)>=0);
+  });
+  casaRecalc();
+  showCasaTab('cresultado',document.querySelectorAll('.casa-sub-btn')[1]);
+}
+
+function deleteAnalysis(id){
+  var es=lang==='es';
+  if(!confirm(es?'Eliminar esta estimación?':'Delete this estimate?'))return;
+  var saved=JSON.parse(localStorage.getItem('fh_analyses_'+currentEmail)||'[]');
+  saved=saved.filter(function(x){return x.id!==id;});
+  localStorage.setItem('fh_analyses_'+currentEmail,JSON.stringify(saved));
+  renderSavedAnalyses();
+}
+
+function renderSavedAnalyses(){
+  var el=document.getElementById('savedAnalysesList');if(!el)return;
+  if(!currentEmail)return;
+  var es=lang==='es';
+  var saved=JSON.parse(localStorage.getItem('fh_analyses_'+currentEmail)||'[]');
+  if(saved.length===0){el.innerHTML='';return;}
+  var html='<div class="sec-label" style="margin-top:4px;">'+(es?'Estimaciones guardadas':'Saved estimates')+'</div>';
+  saved.forEach(function(a){
+    html+='<div class="saved-analysis-item">';
+    html+='<div><div class="saved-analysis-name">'+a.name+'</div>';
+    html+='<div class="saved-analysis-val">$'+Number(a.precio).toLocaleString()+' · PITI '+a.piti+' · '+a.date+'</div></div>';
+    html+='<div class="saved-analysis-btns">';
+    html+='<button class="saved-load-btn" onclick="loadAnalysis('+a.id+')">'+(es?'Cargar':'Load')+'</button>';
+    html+='<button class="saved-del-btn" onclick="deleteAnalysis('+a.id+')">X</button>';
+    html+='</div></div>';
+  });
+  el.innerHTML=html;
+}
+
+function sendToDashboard(){
+  var es=lang==='es';
+  var pitiEl=document.getElementById('c_piti');
+  var pitiText=pitiEl?pitiEl.textContent:'$0';
+  var pitiNum=Number(pitiText.replace(/[^0-9.]/g,''))||0;
+  if(pitiNum===0){alert(es?'Calcula el análisis primero.':'Calculate the analysis first.');return;}
+  // Find existing hipoteca in needs or create new
+  var hipIdx=state.necesidades.findIndex(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')>=0;});
+  var hipName=es?'Hipoteca':'Mortgage';
+  if(hipIdx>=0){
+    state.necesidades[hipIdx].amount=pitiNum;
+    state.necesidades[hipIdx].name=hipName;
+  } else {
+    state.necesidades.push({id:Date.now(),name:hipName,amount:pitiNum,tag:'fijo',person:'',months:0});
+  }
+  saveData(currentEmail);
+  recalculate(false);
+  alert(es?'Hipoteca de '+pitiText+' enviada al dashboard en Necesidades.':'Mortgage of '+pitiText+' sent to dashboard in Needs.');
+  showTab('resumen',document.querySelector('.tab-btn'));
 }
 
 // ---- INIT ----
