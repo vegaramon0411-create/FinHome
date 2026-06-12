@@ -439,10 +439,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span class="btn-lbl" data-lang="btn_exp">Exportar</span>
         </button>
-        <button class="hbtn-icon" onclick="document.getElementById('importFile').click()">
+        <button class="hbtn-icon" onclick="document.getElementById('importFileInput').click()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 16 12 21 17 16"/><line x1="12" y1="21" x2="12" y2="9"/></svg>
           <span class="btn-lbl" data-lang="btn_imp">Importar</span>
         </button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(event)">
         <button class="hbtn-icon danger" onclick="openModal('logoutModal')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           <span class="btn-lbl" data-lang="btn_salir">Salir</span>
@@ -726,7 +727,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div id="savedAnalysesList" style="margin-top:14px;"></div>
 
         <div class="verdict-card info" style="margin-top:10px;">
-          <div class="verdict-title" id="avisoTitle">⚠️ Aviso importante</div>
+          <div class="verdict-title" id="avisoTitle">Aviso importante</div>
           <div class="verdict-desc" data-lang="casa_aviso">Este análisis es una estimación basada en datos públicos. Los valores reales pueden variar según tu lender, historial crediticio y condiciones del mercado al momento de la compra.</div>
         </div>
       </div>
@@ -744,7 +745,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           <div class="kpi"><div class="kpi-label" data-lang="c_costo_lbl">Costo real/mes</div><div class="kpi-value" id="c_costoreal">—</div><div class="kpi-sub" data-lang="c_costo_sub">Todos los gastos</div></div>
           <div class="kpi"><div class="kpi-label" data-lang="c_pct_lbl">% del ingreso</div><div class="kpi-value" id="c_pct">—</div><div class="kpi-sub" data-lang="c_pct_sub">Meta: &lt;28%</div></div>
           <div class="kpi"><div class="kpi-label" data-lang="c_eng_lbl">Enganche $</div><div class="kpi-value green" id="c_engmonto">—</div><div class="kpi-sub" data-lang="c_eng_sub">Down payment</div></div>
-          <div class="kpi"><div class="kpi-label" data-lang="c_total_lbl">Total pagado</div><div class="kpi-value" id="c_totalpag">—</div><div class="kpi-sub" id="c_plazo_sub2">En 30 años</div></div>
+          <div class="kpi"><div class="kpi-label" data-lang="c_total_lbl">Total pagado</div><div class="kpi-value" id="c_totalpag">—</div><div class="kpi-sub" id="c_plazo_sub">En 30 años</div></div>
         </div>
         <div class="sec-label" data-lang="sec_diag">Diagnóstico</div>
         <div id="c_diagnostico"></div>
@@ -778,49 +779,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div class="sec-label" data-lang="sec_busq">Búsquedas inteligentes</div>
         <div class="search-card" id="c_searchLinks"></div>
         <div class="verdict-card info" style="margin-top:10px;">
-          <div class="verdict-title" id="howToTitle">📋 ¿Cómo usar?</div>
-          <div class="verdict-desc" id="howToDesc">1. Escribe tu zona arriba<br>2. Da click → abre Google con la búsqueda exacta<br>3. Copia el número que encuentres<br>4. Pégalo en la pestaña <strong>Datos</strong><br>5. El análisis se actualiza automáticamente</div>
-        </div>
-      </div>
-
-      <!-- REPORTE -->
-      <div class="casa-panel" id="panel-creporte">
-        <div class="sec-label" data-lang="sec_reporte">Reporte completo de compra</div>
-        <div id="c_reporte"></div>
-      </div>
-
-    </div>
-
-  </div>
-  <div class="footer-admin"><span onclick="tryAdmin()">· · ·</span></div>
-</div>
-
-<!-- ADMIN -->
-<div class="admin-screen" id="screenAdmin">
-  <div class="admin-inner">
-    <div class="admin-title">⚙️ Panel Admin</div>
-    <div class="admin-sub">Gestión de códigos de activación.</div>
-    <div class="admin-card">
-      <div class="admin-label">Estado de códigos</div>
-      <div id="adminCodeList"></div>
-    </div>
-    <div class="admin-card">
-      <div class="admin-label">Editar códigos (uno por línea)</div>
-      <textarea class="admin-textarea" id="adminCodes"></textarea>
-      <button class="admin-btn" onclick="saveAdminCodes()">Guardar</button>
-    </div>
-    <div class="admin-card">
-      <div class="admin-label">Reiniciar código</div>
-      <input class="admin-textarea" id="resetCode" placeholder="FH01-A1B2-C3D4" style="min-height:auto;padding:10px 12px;display:block;width:100%;margin-bottom:8px;">
-      <button class="admin-btn" onclick="resetCode()">Reiniciar</button>
-    </div>
-    <button class="admin-btn ghost" onclick="exitAdmin()" style="margin-top:8px;">← Volver</button>
-  </div>
-</div>
+          <div class="verdict-title" id="howToTitle">¿Como usar?</div>
+          <div class="verdict-desc" id="howToDesc">1. Escribe tu zona arriba<br>2. Da click -> abre Google con la busqueda exacta<br>3. Copia el numero que encuentres<br>4. Pegalo en la pestana <strong>Datos</strong><br>5. El analisis se actualiza automaticamente</div>
 
 <script>
 // ============================================================
-// ZONA DE CÓDIGOS — EDITAR AQUÍ
+// ZONA DE CÓDIGOS - EDITAR AQUÍ
 // ============================================================
 var CODIGOS_VALIDOS=["FH01-A1B2-C3D4","FH02-E5F6-G7H8","FH03-I9J0-K1L2","FH04-M3N4-O5P6","FH05-Q7R8-S9T0","FH06-U1V2-W3X4","FH07-Y5Z6-A7B8","FH08-C9D0-E1F2","FH09-G3H4-I5J6","FH10-K7L8-M9N0"];
 var ADMIN_PASSWORD="admin2026finhome";
@@ -840,8 +804,8 @@ function applyLang(){
 
   var T = {
     // Header
-    header_tag: es?'Análisis financiero · 2026':'Financial analysis · 2026',
-    header_sub_text: es?'Método 50/30/20 · Planificación compra de casa':'50/30/20 Method · Home purchase planning',
+    header_tag: es?'Análisis financiero - 2026':'Financial analysis - 2026',
+    header_sub_text: es?'Método 50/30/20 - Planificación compra de casa':'50/30/20 Method - Home purchase planning',
     // Buttons
     btn_exp: es?'Exportar':'Export',
     btn_imp: es?'Importar':'Import',
@@ -875,7 +839,7 @@ function applyLang(){
     proj_sim_sob: es?'Sobrante simulado:':'Simulated surplus:',
     proj_sob_despues: es?'Sobrante después':'Surplus after',
     proj_pago_mes: es?'Pago/mes por deuda':'Payment/mo per debt',
-    proj_sim_note: es?'Simulación — no modifica los meses reales de cada deuda':'Simulation — does not modify the real months per debt',
+    proj_sim_note: es?'Simulación - no modifica los meses reales de cada deuda':'Simulation - does not modify the real months per debt',
     // Charts
     chart_comp: es?'Composición del presupuesto':'Budget composition',
     chart_vs: es?'Real vs Meta 50/30/20':'Actual vs 50/30/20 Target',
@@ -885,12 +849,12 @@ function applyLang(){
     card_pasivos: es?'Fuentes adicionales':'Additional sources',
     tip_pasivos: es?'Los ahorros en cuenta de alto rendimiento generan interés mensual. Mantenlos intocables.':'High-yield savings generate monthly interest. Keep them untouched.',
     // Expenses panel
-    sec_nec: es?'Necesidades — 50%':'Needs — 50%',
+    sec_nec: es?'Necesidades - 50%':'Needs - 50%',
     card_nec: es?'Vivienda & esenciales':'Housing & essentials',
-    sec_des: es?'Deseos — 30%':'Wants — 30%',
+    sec_des: es?'Deseos - 30%':'Wants - 30%',
     card_des: es?'Gastos personales':'Personal expenses',
     // Savings panel
-    sec_aho: es?'Inversiones & Ahorros — 20%':'Savings & Investments — 20%',
+    sec_aho: es?'Inversiones & Ahorros - 20%':'Savings & Investments - 20%',
     card_aho: es?'Aportaciones mensuales':'Monthly contributions',
     tip_fondo: es?'Fondo de emergencia: mantén 3-6 meses de gastos en una cuenta separada e intocable.':'Emergency fund: keep 3-6 months of expenses in a separate untouchable account.',
     // 50/30/20 panel
@@ -907,21 +871,21 @@ function applyLang(){
     c_enganche: es?'Enganche':'Down payment',
     c_enganche_sub: es?'Down payment %':'Down payment %',
     c_tasa: es?'Tasa de interés':'Interest rate',
-    c_tasa_sub: es?'APR anual — búscala en Buscar':'Annual APR — find it in Search',
+    c_tasa_sub: es?'APR anual - búscala en Buscar':'Annual APR - find it in Search',
     c_plazo: es?'Plazo':'Term',
     c_tax_lbl: es?'Property Tax':'Property Tax',
-    c_tax_sub: es?'% anual ó monto anual $ — la app calcula automático':'Annual % or annual $ — app calculates automatically',
+    c_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
     c_seguro_lbl: es?'Seguro de casa':'Home insurance',
-    c_seguro_sub: es?'% anual ó monto anual $ — promedio 0.5–1%':'Annual % or annual $ — avg 0.5–1%',
+    c_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
     c_pmi_lbl: es?'Seguro hipotecario (PMI)':'Private Mortgage Insurance (PMI)',
-    c_pmi_sub: es?'% del préstamo ó monto anual $ — si enganche <20%':'% of loan or annual $ — if down payment <20%',
+    c_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
     c_mant_lbl: es?'Mantenimiento estimado':'Estimated maintenance',
-    c_mant_sub: es?'% anual ó monto anual $ — promedio 1%':'Annual % or annual $ — avg 1%',
+    c_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
     c_hoa_lbl: es?'HOA':'HOA',
     c_hoa_sub: es?'Monto fijo mensual (si aplica)':'Fixed monthly amount (if applicable)',
     c_extra_lbl: es?'Pago extra mensual (opcional)':'Extra monthly payment (optional)',
     c_extra_sub: es?'Reduce años y ahorra en intereses':'Reduces years and saves on interest',
-    casa_btn: es?'Ver análisis completo →':'View full analysis →',
+    casa_btn: es?'Ver análisis completo ->':'View full analysis ->',
     casa_aviso: es?'Este análisis es una estimación basada en datos públicos. Los valores reales pueden variar según tu lender, historial crediticio y condiciones del mercado.':'This analysis is an estimate based on public data. Actual values may vary by lender, credit history, and market conditions.',
     // Segment buttons
     plazo_15: es?'15 años':'15 years',
@@ -971,20 +935,20 @@ function applyLang(){
     modal_apply: es?'Aplicar':'Apply',
     // Onboarding
     ob_skip: es?'Omitir':'Skip',
-    ob_finish: es?'¡Comenzar!':'Get started!',
+    ob_finish: es?'Comenzar!':'Get started!',
     auto_tip_title: es?'Auto-detección':'Auto-detection',
     per_mes: es?'/mes':'/mo',
-    casa_tax_sub: es?'% anual ó monto anual $ — la app calcula automático':'Annual % or annual $ — app calculates automatically',
-    casa_seguro_sub: es?'% anual ó monto anual $ — promedio 0.5–1%':'Annual % or annual $ — avg 0.5–1%',
-    casa_pmi_sub: es?'% del préstamo ó monto anual $ — si enganche <20%':'% of loan or annual $ — if down payment <20%',
-    casa_mant_sub: es?'% anual ó monto anual $ — promedio 1%':'Annual % or annual $ — avg 1%',
+    casa_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
+    casa_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
+    casa_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
+    casa_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
     auto_tip_desc: es?'Puedes poner % anual (ej: 2.62) o monto anual $ (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.':'You can enter annual % (e.g. 2.62) or annual $ amount (e.g. 3500). The app detects which one and calculates the monthly payment automatically.',
     auto_tip_title: es?'Auto-detección':'Auto-detection',
     per_mes: es?'/mes':'/mo',
-    casa_tax_sub: es?'% anual ó monto anual $ — la app calcula automático':'Annual % or annual $ — app calculates automatically',
-    casa_seguro_sub: es?'% anual ó monto anual $ — promedio 0.5–1%':'Annual % or annual $ — avg 0.5–1%',
-    casa_pmi_sub: es?'% del préstamo ó monto anual $ — si enganche <20%':'% of loan or annual $ — if down payment <20%',
-    casa_mant_sub: es?'% anual ó monto anual $ — promedio 1%':'Annual % or annual $ — avg 1%',
+    casa_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
+    casa_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
+    casa_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
+    casa_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
     auto_tip_desc: es?'Puedes poner % anual (ej: 2.62) o monto anual $ (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.':'You can enter annual % (e.g. 2.62) or annual $ amount (e.g. 3500). The app detects which one and calculates the monthly payment automatically.',
     // Card titles
     card_pasivos: es?'Fuentes adicionales':'Additional sources',
@@ -1056,26 +1020,34 @@ function applyLang(){
   } catch(e){}
 
   // Update member button label
-  var membLbl = document.getElementById('membersLabel');
-  if(membLbl) membLbl.textContent = es ? 'Integrantes' : 'Members';
+  try {
+    var membLblEl = document.getElementById('membersLabel');
+    if(membLblEl) membLblEl.textContent = es ? 'Integrantes' : 'Members';
+  } catch(e) {}
 
-  // How to use section
-  var howToTitle = document.getElementById('howToTitle');
-  if(howToTitle) howToTitle.innerHTML = es ? '[i] ¿Cómo usar?' : '[i] How to use?';
-  var howToDesc = document.getElementById('howToDesc');
-  if(howToDesc) howToDesc.innerHTML = es
-    ? '1. Escribe tu zona arriba<br>2. Da click → abre Google con la búsqueda exacta<br>3. Copia el número que encuentres<br>4. Pégalo en la pestaña <strong>Datos</strong><br>5. El análisis se actualiza automáticamente'
-    : '1. Type your city above<br>2. Click → opens Google with the exact search<br>3. Copy the number you find<br>4. Paste it in the <strong>Data</strong> tab<br>5. The analysis updates automatically';
+  // How to use + aviso section (wrapped safely)
+  try {
+    var howToTitleEl = document.getElementById('howToTitle');
+    if(howToTitleEl) howToTitleEl.textContent = es ? '¿Como usar?' : 'How to use?';
+  } catch(e) {}
+  try {
+    var howToDescEl = document.getElementById('howToDesc');
+    if(howToDescEl) howToDescEl.innerHTML = es
+      ? '1. Escribe tu zona arriba<br>2. Da click - abre Google con la busqueda exacta<br>3. Copia el numero que encuentres<br>4. Pegalo en la pestana Datos<br>5. El analisis se actualiza automaticamente'
+      : '1. Type your city above<br>2. Click - opens Google with the exact search<br>3. Copy the number you find<br>4. Paste it in the Data tab<br>5. The analysis updates automatically';
+  } catch(e) {}
+  try {
+    var avisoTitleEl2 = document.getElementById('avisoTitle');
+    if(avisoTitleEl2) avisoTitleEl2.textContent = es ? 'Aviso importante' : 'Important notice';
+  } catch(e) {}
 
-  // Aviso importante title
-  var avisoTitle = document.getElementById('avisoTitle');
-  if(avisoTitle) avisoTitle.innerHTML = es ? '[!] Aviso importante' : '[!] Important notice';
-
-  // Update search zone hint
-  var hint = document.querySelector('.zone-hint');
-  if(hint) hint.textContent = es
-    ? '[*] Escribe tu ciudad → da click al link → copia el dato → pégalo en la pestaña Datos.'
-    : '[*] Type your city → click the link → copy the data → paste it in the Data tab.';
+  try {
+    // Update search zone hint
+    var hint = document.querySelector('.zone-hint');
+    if(hint) hint.textContent = es
+      ? '[*] Escribe tu ciudad -> da click al link -> copia el dato -> pégalo en la pestaña Datos.'
+      : '[*] Type your city -> click the link -> copy the data -> paste it in the Data tab.';
+  } catch(e) {}
 
   // Update search how-to box
   var howto = document.querySelector('.verdict-desc');
@@ -1087,24 +1059,27 @@ function applyLang(){
   } catch(e){}
 
   // Update save/dash button labels
-  var saveLbl=document.getElementById('saveBtnLabel');
-  if(saveLbl)saveLbl.textContent=es?'Guardar estimación':'Save estimate';
-  var dashLbl=document.getElementById('dashBtnLabel');
-  if(dashLbl)dashLbl.textContent=es?'Pasar al dashboard':'Send to dashboard';
+  try {
+    var saveLblEl=document.getElementById('saveBtnLabel');
+    if(saveLblEl)saveLblEl.textContent=es?'Guardar estimacion':'Save estimate';
+    var dashLblEl=document.getElementById('dashBtnLabel');
+    if(dashLblEl)dashLblEl.textContent=es?'Pasar al dashboard':'Send to dashboard';
+  } catch(e) {}
 
   // Update search links with new lang
   if(currentEmail)renderSavedAnalyses();
   updateCasaLinks();
 
-  // Re-render dynamic content only if app is visible
-  try {
-    var appEl=document.getElementById('screenApp');
-    if(appEl && appEl.classList.contains('active')) {
-      if(typeof updateProjection==='function') updateProjection();
-      if(typeof recalculate==='function') recalculate(true);
-      if(typeof casaRecalc==='function') casaRecalc();
-    }
-  } catch(e){ console.log('applyLang render error:',e); }
+  // Re-render all dynamic content with new language
+  // Use timeout to ensure lang variable is set before rendering
+  var appEl=document.getElementById('screenApp');
+  if(appEl && appEl.classList.contains('active')) {
+    setTimeout(function(){
+      try{ recalculate(true); }catch(e){}
+      try{ casaRecalc(); }catch(e){}
+      try{ updateProjection(); }catch(e){}
+    }, 0);
+  }
 }
 
 // ---- MODALS ----
@@ -1180,10 +1155,10 @@ var obCurrent=0;
 function getObSteps(){
   var es=lang==='es';
   return [
-    {icon:'[H]',title:es?'Tu presupuesto familiar':'Your family budget',desc:es?'FinHome te ayuda a analizar si puedes comprar una casa usando el método 50/30/20.':'FinHome helps you analyze if you can buy a home using the 50/30/20 method.'},
-    {icon:'[P]',title:es?'Agrega tus integrantes':'Add your members',desc:es?'Toca el botón "Integrantes" para agregar a cada persona del hogar. Sus salarios aparecerán en Ingresos automáticamente.':'Tap "Members" to add each household person. Their salaries will appear in Income automatically.'},
-    {icon:'[C]',title:es?'Registra tus gastos':'Log your expenses',desc:es?'Agrega gastos y asígnalos a una persona específica. Los gastos temporales tienen contador de meses para proyecciones.':'Add expenses and assign them to a specific person. Temporary expenses have a month counter for projections.'},
-    {icon:'[T]',title:es?'Analiza tu resultado':'Analyze your results',desc:es?'El Score y los Tips en 50/30/20 te dirán si comprar la casa es viable y cómo mejorar tu salud financiera.':'The Score and Tips in 50/30/20 will tell you if buying the home is viable and how to improve your financial health.'}
+    {icon:getSvgIcon('[H]',52),title:es?'Tu presupuesto familiar':'Your family budget',desc:es?'FinHome te ayuda a analizar si puedes comprar una casa usando el metodo 50/30/20.':'FinHome helps you analyze if you can buy a home using the 50/30/20 method.'},
+    {icon:getSvgIcon('[P]',52),title:es?'Agrega tus integrantes':'Add your members',desc:es?'Toca "Integrantes" para agregar a cada persona. Sus salarios apareceran en Ingresos automaticamente.':'Tap "Members" to add each person. Their salaries will appear in Income automatically.'},
+    {icon:getSvgIcon('[C]',52),title:es?'Registra tus gastos':'Log your expenses',desc:es?'Agrega gastos y asignalos a una persona especifica. Los temporales tienen contador de meses.':'Add expenses and assign them to a person. Temporary ones have a month counter.'},
+    {icon:getSvgIcon('[T]',52),title:es?'Analiza tu resultado':'Analyze your results',desc:es?'El Score y los Tips en 50/30/20 te diran si comprar la casa es viable.':'The Score and Tips will tell you if buying the home is viable.'}
   ];
 }
 var obStepsData=getObSteps();
@@ -1194,7 +1169,7 @@ function renderOnboarding(){
   se.innerHTML='<div class="ob-icon">'+s.icon+'</div><div class="ob-title">'+s.title+'</div><div class="ob-desc">'+s.desc+'</div>';
   de.innerHTML='';
   obStepsData.forEach(function(_,i){var d=document.createElement('div');d.className='ob-dot'+(i===obCurrent?' active':'');de.appendChild(d);});
-  var btn=document.getElementById('obNextBtn');if(btn)btn.textContent=obCurrent===obStepsData.length-1?'¡Comenzar!':'Siguiente →';
+  var btn=document.getElementById('obNextBtn');if(btn)btn.textContent=obCurrent===obStepsData.length-1?'Comenzar!':'Siguiente ->';
 }
 function obNext(){obStepsData=getObSteps();if(obCurrent<obStepsData.length-1){obCurrent++;renderOnboarding();}else finishOnboarding();}
 function finishOnboarding(){var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');loadAndShow(sess.email||'');}
@@ -1225,9 +1200,10 @@ function getTempTotal(){return getTempMonthly();}
 function monthlyIncome(){return state.members.reduce(function(s,m){return s+(Number(m.weekly||0)*4.33);},0)+sumMonthly(state.passive);}
 
 // ---- SAVE / LOAD ----
-function saveData(){
+function saveData(emailOverride){
   var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');
-  var key='fh_data_'+emailKey(sess.email||'guest');
+  var em=emailOverride||sess.email||currentEmail||'guest';
+  var key='fh_data_'+emailKey(em);
   localStorage.setItem(key,JSON.stringify({members:state.members,passive:state.passive,necesidades:state.necesidades,deseos:state.deseos,ahorros:state.ahorros,nid:state.nid}));
 }
 
@@ -1272,7 +1248,7 @@ function importData(event){
       if(d.deseos)state.deseos=d.deseos;
       if(d.ahorros)state.ahorros=d.ahorros;
       if(d.nid)state.nid=d.nid;
-      saveData();recalculate(false);alert('Datos importados.');
+      saveData(currentEmail);recalculate(false);alert(lang==='es'?'Datos importados correctamente.':'Data imported successfully.');
     }catch(ex){alert('Error al importar.');}
   };
   reader.readAsText(file);event.target.value='';
@@ -1291,7 +1267,7 @@ function renderMembersList(){
       '<div class="member-avatar">'+initial+'</div>'+
       '<input class="member-name-input" value="'+m.name+'" data-mid="'+m.id+'" placeholder="Nombre...">'+
       '<span class="member-income-badge">'+fmt(Number(m.weekly||0)*4.33)+'/mes</span>'+
-      '<button class="btn-del" data-delm="'+m.id+'">×</button>';
+      '<button class="btn-del" data-delm="'+m.id+'">x</button>';
     el.appendChild(row);
   });
   // update count badge
@@ -1354,7 +1330,7 @@ function renderIncomeCards(){
     card.innerHTML=
       '<div class="income-top"><div class="income-avatar">'+initial+'</div><div class="income-name">'+m.name+'</div></div>'+
       '<input type="number" class="income-val" value="'+(m.weekly||0)+'" data-weeks="1" data-mid="'+m.id+'" placeholder="0">'+
-      '<div class="income-sub">× 4.33 = '+fmt(Number(m.weekly||0)*4.33)+(lang==="es"?"/mes":"/mo")+'</div>';
+      '<div class="income-sub">x 4.33 = '+fmt(Number(m.weekly||0)*4.33)+(lang==="es"?"/mes":"/mo")+'</div>';
     el.appendChild(card);
   });
   if(state.members.length===0){
@@ -1397,7 +1373,7 @@ function renderList(cat){
     var amtLabel=isTemp?'Saldo total':'Monto';
     row.innerHTML='<span class="row-name">'+item.name+'</span>'+personHtml+tagHtml+
       '<input type="number" class="row-input" value="'+total+'" data-cat="'+cat+'" data-id="'+item.id+'" placeholder="'+amtLabel+'">'+
-      '<button class="btn-del" data-cat="'+cat+'" data-id="'+item.id+'">×</button>';
+      '<button class="btn-del" data-cat="'+cat+'" data-id="'+item.id+'">x</button>';
     wrap.appendChild(row);
 
     if(isTemp){
@@ -1421,7 +1397,7 @@ function renderPassive(){
     var row=document.createElement('div');row.className='passive-row';
     row.innerHTML='<div class="passive-dot"></div><span class="row-name" style="flex:1">'+item.name+'</span>'+
       '<input type="number" class="row-input" value="'+item.amount+'" data-passive="1" data-id="'+item.id+'">'+
-      '<button class="btn-del" data-passive="1" data-id="'+item.id+'">×</button>';
+      '<button class="btn-del" data-passive="1" data-id="'+item.id+'">x</button>';
     el.appendChild(row);
   });
   var tot=document.getElementById('total-pasivos');if(tot)tot.textContent=fmt(sum(state.passive));
@@ -1527,7 +1503,7 @@ function mBar(label,actual,target,total,color,isEs){
   var ds=diff>=0?'+'+fmt(diff)+(isEs?' sobre meta':' over target'):fmt(Math.abs(diff))+(isEs?' disponible':' available');
   return '<div class="m-row"><div class="m-top"><span class="m-name" style="color:'+c+'">'+label+'</span><span class="m-vals">'+fmt(actual)+' / '+fmt(target)+'</span></div>'+
     '<div class="m-bar-bg"><div class="m-bar-fill" style="width:'+pct+'%;background:'+c+'"></div></div>'+
-    '<div class="m-note">'+ds+' · '+((total>0?(actual/total)*100:0)).toFixed(1)+(isEs?'% del ingreso':'% of income')+'</div></div>';
+    '<div class="m-note">'+ds+' - '+((total>0?(actual/total)*100:0)).toFixed(1)+(isEs?'% del ingreso':'% of income')+'</div></div>';
 }
 
 function renderScore(total,nec,des,aho,sob,t50,t30,t20){
@@ -1611,30 +1587,21 @@ function renderCharts(nec,des,aho,sob,total,t50,t30,t20){
 
 function renderAlerts(total,nec,des,aho,sob,t50,t30,t20){
   var el=document.getElementById('alertsContainer');if(!el)return;
-  var months=parseInt(document.getElementById('projMonths').value)||3;
+  var esA=lang==='es';
+  var pmA=document.getElementById('projMonths');
+  var months=pmA?parseInt(pmA.value)||3:3;
   var tempTotal=getTempTotal();var html='';
   if(sob<0)html+=alertEl('danger','[!]','<strong>'+(esA?'Déficit de':'Deficit of')+' '+fmt(Math.abs(sob))+(esA?'/mes.</strong> Los gastos superan el ingreso.':'/mo.</strong> Expenses exceed income.'));
   else if(sob<150)html+=alertEl('warn','[!]','<strong>'+(esA?'Margen bajo:':'Low margin:')+' </strong>'+(esA?'Solo ':'Only ')+fmt(sob)+(esA?'/mes sobrante.':'/mo surplus.'));
-  else html+=alertEl('ok','[ok]','<strong>'+(esA?'Sobrante de':'Surplus of')+' '+fmt(sob)+(esA?'/mes</strong> — ':'/mo</strong> — ')+fmtD(sob/4.33)+(esA?'/semana disponible.':'/week available.'));
-  if(nec>t50)html+=alertEl('warn','[H]',esA?'Necesidades sobre el 50%: '+fmt(nec)+' vs meta '+fmt(t50)+'.':'Needs above 50%: '+fmt(nec)+' vs target '+fmt(t50)+'.');
-  if(tempTotal>0)html+=alertEl('info','[D]',esA?'En '+months+' meses se liberan ~'+fmt(tempTotal)+'/mes. Sobrante futuro: '+fmt(sob+tempTotal)+'/mes.':'In '+months+' months ~'+fmt(tempTotal)+'/mo will be freed. Future surplus: '+fmt(sob+tempTotal)+'/mo.');
+  else html+=alertEl('ok','[ok]','<strong>'+(esA?'Sobrante de':'Surplus of')+' '+fmt(sob)+(esA?'/mes</strong> - ':'/mo</strong> - ')+fmtD(sob/4.33)+(esA?'/semana disponible.':'/week available.'));
+  if(nec>t50)html+=alertEl('warn','[*]',esA?'Necesidades sobre el 50%: '+fmt(nec)+' vs meta '+fmt(t50)+'.':'Needs above 50%: '+fmt(nec)+' vs target '+fmt(t50)+'.');
+  if(tempTotal>0)html+=alertEl('info','[!]',esA?'En '+months+' meses se liberan ~'+fmt(tempTotal)+'/mes. Sobrante futuro: '+fmt(sob+tempTotal)+'/mes.':'In '+months+' months ~'+fmt(tempTotal)+'/mo will be freed. Future surplus: '+fmt(sob+tempTotal)+'/mo.');
   el.innerHTML=html;
 }
-function svgIcon(type){
-  var icons={
-    'ok-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>',
-    'warn-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    'danger-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-    'info-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-    'star-icon':'<svg width="18" height="18" viewBox="0 0 24 24" fill="#34c759" stroke="#34c759" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-  };
-  return icons[type]||'<span>•</span>';
-}
-function alertEl(cls,icon,msg){return '<div class="alert '+cls+'"><div class="alert-icon">'+svgIcon(icon)+'</div><div>'+msg+'</div></div>';}
-
+function alertEl(cls,icon,msg){var ic=getSvgIcon(icon||'[!]',18);return '<div class="alert '+cls+'"><div class="alert-icon">'+ic+'</div><div>'+msg+'</div></div>';}
+function tipEl(cls,icon,title){var ic=getSvgIcon(cls==='ok'?'[ok]':cls==='warn'?'[*]':'[!]',20);return '<div class="tip-card '+cls+'"><div class="tip-icon">'+ic+'</div><div class="tip-title">'+title+'</div></div>';}
 function renderTips(total,nec,des,aho,sob,t50,t30,t20){
-  var el=document.getElementById('tipsContainer');
-  if(!el){return;}
+  var el=document.getElementById('tipsContainer');if(!el)return;
   var pmEl=document.getElementById('projMonths');
   var months=pmEl?parseInt(pmEl.value)||3:3;
   var tempTotal=getTempTotal();
@@ -1645,18 +1612,38 @@ function renderTips(total,nec,des,aho,sob,t50,t30,t20){
   var esP=lang==='es';
   var hipOver=2068/Math.max(total,1)>.35;
   var ahoLow=aho/Math.max(total,1)<.15;
-  html+=tipEl(hipOver?'warn':'ok','',esP?(hipOver?'Tu hipoteca representa el '+mortP+'% del ingreso — lo ideal es menos del 30%.':'Tu hipoteca representa el '+mortP+'% del ingreso — rango saludable.'):(hipOver?'Your mortgage is '+mortP+'% of income — ideally under 30%.':'Your mortgage is '+mortP+'% of income — healthy range.'));
-  html+=tipEl(ahoLow?'warn':'ok','',esP?(ahoLow?'Ahorras el '+ahoP+'%. Intenta llegar al 20%.':'¡Ahorras el '+ahoP+'% del ingreso! Buen ritmo.'):(ahoLow?'You are saving '+ahoP+'%. Try to reach 20%.':'You are saving '+ahoP+'% of income! Great pace.'));
-  if(tempTotal>0)html+=tipEl('info','',esP?'Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu ahorro podría subir a '+fmt(aho+tempTotal)+'/mes ('+newAhoP+'%).':'By freeing '+fmt(tempTotal)+'/mo in '+months+' months, savings could rise to '+fmt(aho+tempTotal)+'/mo ('+newAhoP+'%).');
-  html+=tipEl('info','',esP?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des+aho)*6)+').');
-  html+=tipEl(des>t30?'warn':'ok','',esP?(des>t30?'Tus deseos ('+fmt(des)+') superan la meta del 30% ('+fmt(t30)+').':'Tus deseos están dentro del 30% — buen control.'):(des>t30?'Your wants ('+fmt(des)+') exceed the 30% target ('+fmt(t30)+').':'Your wants are within 30% — good control.'));
+  html+=tipEl(hipOver?'warn':'ok',hipOver?'[B]':'[ok]',esP?(hipOver?'Tu hipoteca representa el '+mortP+'% del ingreso - lo ideal es menos del 30%.':'Tu hipoteca representa el '+mortP+'% del ingreso - rango saludable.'):(hipOver?'Your mortgage is '+mortP+'% of income - ideally under 30%.':'Your mortgage is '+mortP+'% of income - healthy range.'));
+  html+=tipEl(ahoLow?'warn':'ok',ahoLow?'[$]':'[^]',esP?(ahoLow?'Ahorras el '+ahoP+'%. Intenta llegar al 20%.':'Ahorras el '+ahoP+'% del ingreso! Buen ritmo.'):(ahoLow?'You are saving '+ahoP+'%. Try to reach 20%.':'You are saving '+ahoP+'% of income! Great pace.'));
+  if(tempTotal>0)html+=tipEl('info','[>]',esP?'Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu ahorro podría subir a '+fmt(aho+tempTotal)+'/mes ('+newAhoP+'%).':'By freeing '+fmt(tempTotal)+'/mo in '+months+' months, savings could rise to '+fmt(aho+tempTotal)+'/mo ('+newAhoP+'%).');
+  html+=tipEl('info','[s]',esP?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des+aho)*6)+').');
+  html+=tipEl(des>t30?'warn':'ok',des>t30?'[T]':'[ok]',esP?(des>t30?'Tus deseos ('+fmt(des)+') superan la meta del 30% ('+fmt(t30)+').':'Tus deseos están dentro del 30% - buen control.'):(des>t30?'Your wants ('+fmt(des)+') exceed the 30% target ('+fmt(t30)+').':'Your wants are within 30% - good control.'));
   el.innerHTML=html;
 }
-function tipIcon(cls){
-  var c=cls==='ok'?'#34c759':cls==='warn'?'#ff9500':cls==='danger'?'#ff3b30':'#007aff';
-  return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+function getSvgIcon(badge,size){
+  var s=size||22;
+  var blue="#007AFF",purple="#5856D6",green="#34C759",orange="#FF9500",red="#FF3B30";
+  var w=' width="'+s+'"',h=' height="'+s+'"',vb=' viewBox="0 0 24 24"',f=' fill="none"',sl=' stroke-linecap="round"',sj=' stroke-linejoin="round"';
+  var base='<svg'+w+h+vb+f+sl+sj;
+  var paths={
+    "[H]":base+' stroke="'+blue+'" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    "[P]":base+' stroke="'+purple+'" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    "[C]":base+' stroke="'+green+'" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    "[T]":base+' stroke="'+orange+'" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    "[B]":base+' stroke="'+blue+'" stroke-width="2"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+    "[s]":base+' stroke="'+green+'" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    "[D]":base+' stroke="'+purple+'" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    "[*]":'<svg'+w+h+vb+' fill="'+orange+'" stroke="'+orange+'" stroke-width="1"'+sl+sj+'><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    "[!]":base+' stroke="'+blue+'" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    "[ok]":base+' stroke="'+green+'" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+    "[>]":base+' stroke="'+purple+'" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+    "[$]":base+' stroke="'+green+'" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+    "[^]":base+' stroke="'+green+'" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    "[m]":base+' stroke="'+red+'" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><polyline points="15 5 19 5 19 9"/><polyline points="5 15 5 19 9 19"/></svg>'
+  };
+  return paths[badge]||paths["[!]"];
 }
-function tipEl(cls,icon,title){return '<div class="tip-card '+cls+'"><div class="tip-icon">'+tipIcon(cls)+'</div><div class="tip-title">'+title+'</div></div>';}
+
+function tipEl(cls,icon,title){var ic=getSvgIcon(cls==='ok'?'[ok]':cls==='danger'?'[!]':cls==='warn'?'[*]':'[!]',20);return '<div class="tip-card '+cls+'"><div class="tip-icon">'+ic+'</div><div class="tip-title">'+title+'</div></div>';}
 
 function renderViability(total,nec,sob){
   var el=document.getElementById('viabilityCard');
@@ -1723,7 +1710,7 @@ function updateMonthsModal(total){
   var perMonth=v>0?total/v:0;
   var perWeek=perMonth/4.33;
   document.getElementById('monthsModalCalc').innerHTML=
-    '<strong>'+fmt(perMonth)+'/mes</strong> &nbsp;·&nbsp; '+fmtD(perWeek)+'/sem<br>'+
+    '<strong>'+fmt(perMonth)+'/mes</strong> &nbsp;-&nbsp; '+fmtD(perWeek)+'/sem<br>'+
     '<span style="font-size:12px;color:var(--text3)">Total deuda: '+fmt(total)+'</span>';
 }
 function adjustMonths(delta){
@@ -1745,7 +1732,7 @@ document.body.addEventListener('click',function(e){
 
 
 // ============================================================
-// CASA — ANÁLISIS DE HIPOTECA
+// CASA - ANÁLISIS DE HIPOTECA
 // ============================================================
 var casaPlazo = 30;
 
@@ -1843,9 +1830,9 @@ function casaRecalc() {
   function smartLabel(raw, mes) {
     var isEs = lang === 'es';
     if(raw < 100) {
-      return (isEs ? 'Modo % — ' : 'Mode % — ') + raw + '% = ' + casaFmt(mes) + (isEs ? '/mes' : '/mo');
+      return (isEs ? 'Modo % - ' : 'Mode % - ') + raw + '% = ' + casaFmt(mes) + (isEs ? '/mes' : '/mo');
     } else {
-      return (isEs ? 'Modo $ anual — $' : 'Mode $ annual — $') + Math.round(raw) + ' = ' + casaFmt(mes) + (isEs ? '/mes' : '/mo');
+      return (isEs ? 'Modo $ anual - $' : 'Mode $ annual - $') + Math.round(raw) + ' = ' + casaFmt(mes) + (isEs ? '/mes' : '/mo');
     }
   }
 
@@ -1859,7 +1846,7 @@ function casaRecalc() {
   // Show derived amounts + mode indicator
   var tc = document.getElementById('c_tax_calc');    if(tc) tc.textContent = '= '+casaFmt(taxMes)+(lang==='es'?'/mes':'/mo');
   var sc = document.getElementById('c_seguro_calc'); if(sc) sc.textContent = '= '+casaFmt(segMes)+(lang==='es'?'/mes':'/mo');
-  var pc = document.getElementById('c_pmi_calc');    if(pc) pc.textContent = pctEng<20 ? '= '+casaFmt(pmiMes)+(lang==='es'?'/mes':'/mo') : (lang==='es'?'= $0 (enganche ≥20%)':'= $0 (down payment ≥20%)');
+  var pc = document.getElementById('c_pmi_calc');    if(pc) pc.textContent = pctEng<20 ? '= '+casaFmt(pmiMes)+(lang==='es'?'/mes':'/mo') : (lang==='es'?'= $0 (enganche >=20%)':'= $0 (down payment >=20%)');
   var mc = document.getElementById('c_mant_calc');   if(mc) mc.textContent = '= '+casaFmt(mantMes)+(lang==='es'?'/mes':'/mo');
 
   // Mode labels
@@ -1879,11 +1866,11 @@ function casaRecalc() {
   var totalpag = principal + totalInt;
   var piti     = pi + taxMes + segMes + pmiMes + hoa;
   var costoReal= piti + mantMes;
-  var pctIng   = (piti/ingreso)*100;
+  var pctIng   = ingreso>0?(piti/ingreso)*100:0;
 
   // Result tab
   casaSetText('c_piti', casaFmt(piti));
-  var esPI=lang==='es'; casaSetText('c_piti_sub', 'P+I '+casaFmt(pi)+' · Tax '+casaFmt(taxMes)+' · '+(esPI?'Seg':'Ins')+' '+casaFmt(segMes)+(pmiMes>0?' · PMI '+casaFmt(pmiMes):'')+(hoa>0?' · HOA '+casaFmt(hoa):''));
+  var esPI=lang==='es'; casaSetText('c_piti_sub', 'P+I '+casaFmt(pi)+' - Tax '+casaFmt(taxMes)+' - '+(esPI?'Seg':'Ins')+' '+casaFmt(segMes)+(pmiMes>0?' - PMI '+casaFmt(pmiMes):'')+(hoa>0?' - HOA '+casaFmt(hoa):''));
   casaSetText('c_pi', casaFmt(pi));
   casaSetText('c_totalint', casaFmt(totalInt));
   casaSetText('c_costoreal', casaFmt(costoReal));
@@ -1935,7 +1922,7 @@ function casaRenderDiag(pctIng, pctEng, tasa, precio, pi, costoReal, ingreso, pm
   else items.push({cls:'danger',icon:'[!]',title:(esD?'Carga alta':'High load')+' ('+casaFmtPct(pctIng)+')',desc:esD?'Supera el 36% del ingreso. Puede dificultar la aprobación del préstamo. Considera aumentar el enganche o buscar una propiedad más económica.':'Exceeds 36% of income. May hinder loan approval. Consider a larger down payment or a less expensive property.'});
 
   if(pctEng>=20) items.push({cls:'ok',icon:'[ok]',title:(esD?'Enganche sólido':'Solid down payment')+' ('+pctEng+'%)',desc:esD?'Evitas el PMI y obtienes mejor tasa. Posición de compra fuerte.':'You avoid PMI and get a better rate. Strong buying position.'});
-  else if(pctEng>=10) items.push({cls:'warn',icon:'[*]',title:(esD?'Enganche del '+pctEng+'% — PMI aplicado':'Down payment '+pctEng+'% — PMI applied'),desc:esD?'Pagarás PMI '+casaFmt(pmiMes)+'/mes hasta alcanzar el 20% de equity. Se cancela automáticamente.':'You will pay PMI '+casaFmt(pmiMes)+'/mo until you reach 20% equity. It cancels automatically.'});
+  else if(pctEng>=10) items.push({cls:'warn',icon:'[*]',title:(esD?'Enganche del '+pctEng+'% - PMI aplicado':'Down payment '+pctEng+'% - PMI applied'),desc:esD?'Pagarás PMI '+casaFmt(pmiMes)+'/mes hasta alcanzar el 20% de equity. Se cancela automáticamente.':'You will pay PMI '+casaFmt(pmiMes)+'/mo until you reach 20% equity. It cancels automatically.'});
   else items.push({cls:'danger',icon:'[!]',title:(esD?'Enganche bajo':'Low down payment')+' ('+pctEng+'%)',desc:esD?'PMI alto y tasa desfavorable. Evalúa programas FHA (3.5% mínimo) o ahorra más enganche.':'High PMI and unfavorable rate. Consider FHA programs (3.5% min) or save more for down payment.'});
 
   if(tasa<=5.5) items.push({cls:'ok',icon:'[ok]',title:(esD?'Tasa competitiva':'Competitive rate')+' ('+tasa+'%)',desc:esD?'Por debajo del promedio actual. Excelente condición.':'Below current average. Excellent condition.'});
@@ -1945,11 +1932,9 @@ function casaRenderDiag(pctIng, pctEng, tasa, precio, pi, costoReal, ingreso, pm
   items.push({cls:'info',icon:'info',title:(esD?'Costo real mensual: ':'Real monthly cost: ')+casaFmt(costoReal),desc:esD?'Esto incluye hipoteca, impuestos, seguro, PMI y mantenimiento estimado. Es lo que realmente sale de tu bolsillo cada mes.':'This includes mortgage, taxes, insurance, PMI and estimated maintenance. What really comes out of your pocket each month.'});
 
   el.innerHTML = items.map(function(i){
-    var ic=i.cls==='ok'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>':
-           i.cls==='warn'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>':
-           i.cls==='danger'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>':
-           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
-    return '<div class="verdict-card '+i.cls+'"><div class="verdict-title">'+ic+' '+i.title+'</div><div class="verdict-desc">'+i.desc+'</div></div>';
+    var dc=i.cls==='ok'?'#34c759':i.cls==='warn'?'#ff9500':i.cls==='danger'?'#ff3b30':'#007aff';
+    var dot='<svg width="18" height="18" viewBox="0 0 22 22" style="vertical-align:middle;margin-right:6px;flex-shrink:0"><circle cx="11" cy="11" r="10" fill="'+dc+'" opacity="0.12"/><circle cx="11" cy="11" r="6" fill="'+dc+'" opacity="0.25"/><circle cx="11" cy="11" r="3.5" fill="'+dc+'"/></svg>';
+    return '<div class="verdict-card '+i.cls+'"><div class="verdict-title">'+dot+i.title+'</div><div class="verdict-desc">'+i.desc+'</div></div>';
   }).join('');
 }
 
@@ -1962,10 +1947,10 @@ function casaRenderReporte(precio, engMonto, principal, pi, piti, costoReal, tot
   score = Math.max(0, Math.min(100, score));
   var sc = score>=75?'ok':score>=50?'warn':'danger';
   var esR=lang==='es';
-  var sl = score>=75?(esR?'[ok] Compra viable':'[ok] Viable purchase'):score>=50?(esR?'[!] Compra con precaución':'[!] Purchase with caution'):(esR?'⛔ Revisa antes de comprar':'⛔ Review before buying');
+  var sl = score>=75?(esR?'Compra viable':'Viable purchase'):score>=50?(esR?'Compra con precaución':'Purchase with caution'):(esR?' Revisa antes de comprar':' Review before buying');
 
   var html = '<div style="text-align:center;padding:16px 0 8px;">';
-  html += '<div class="score-pill '+sc+'">'+sl+' · Score '+score+'</div></div>';
+  html += '<div class="score-pill '+sc+'">'+sl+' - Score '+score+'</div></div>';
 
   html += casaSection(esR?'[$] Financiamiento':'[$] Financing',[
     [esR?'Precio de la casa':'Home price', casaFmt(precio)],
@@ -1992,15 +1977,16 @@ function casaRenderReporte(precio, engMonto, principal, pi, piti, costoReal, tot
   ]);
 
   var rec = score>=75
-    ? (esR?'Las condiciones son favorables. El pago mensual es manejable y el enganche es adecuado. Procede con confianza — asegúrate de comparar al menos 3 lenders.':'Conditions are favorable. The monthly payment is manageable and the down payment is adequate. Proceed with confidence — compare at least 3 lenders.')
+    ? (esR?'Las condiciones son favorables. El pago mensual es manejable y el enganche es adecuado. Procede con confianza - asegúrate de comparar al menos 3 lenders.':'Conditions are favorable. The monthly payment is manageable and the down payment is adequate. Proceed with confidence - compare at least 3 lenders.')
     : score>=50
     ? (esR?'La compra es posible pero con margen ajustado. Considera pagos extra para reducir intereses, o espera a mejorar el enganche para obtener mejor tasa.':'The purchase is possible but tight. Consider extra payments to reduce interest, or wait to improve your down payment for a better rate.')
     : (esR?'Se recomienda esperar o reevaluar. La carga hipotecaria es alta respecto al ingreso, lo que puede dificultar la aprobación y dejar poco margen para imprevistos.':'It is recommended to wait or re-evaluate. The mortgage load is high relative to income, which may hinder approval and leave little margin for unexpected expenses.');
 
   html += '<div class="verdict-card '+(score>=75?'ok':score>=50?'warn':'danger')+'" style="margin-bottom:10px;">';
-  html += '<div class="verdict-title">'+(score>=75?'[ok]':score>=50?'[!]':'⛔')+' '+(esR?'Recomendación final':'Final recommendation')+'</div>';
+  html += '<div class="verdict-title">'+(score>=75?'[ok]':score>=50?'[!]':'')+' '+(esR?'Recomendación final':'Final recommendation')+'</div>';
   html += '<div class="verdict-desc">'+rec+'</div></div>';
-  html += '<div class="verdict-card info"><div class="verdict-title">[!] '+(esR?'Aviso':'Notice')+'</div><div class="verdict-desc">'+(esR?'Estimación basada en datos públicos. Los valores reales varían según lender, historial crediticio y mercado al momento de la compra.':'Estimate based on public data. Actual values vary by lender, credit history, and market conditions at the time of purchase.')+'</div></div>';
+  var noticeIc='<svg width="18" height="18" viewBox="0 0 22 22" style="vertical-align:middle;margin-right:6px"><circle cx="11" cy="11" r="10" fill="#007aff" opacity="0.12"/><circle cx="11" cy="11" r="6" fill="#007aff" opacity="0.25"/><circle cx="11" cy="11" r="3.5" fill="#007aff"/></svg>';
+  html += '<div class="verdict-card info"><div class="verdict-title">'+noticeIc+(esR?'Aviso':'Notice')+'</div><div class="verdict-desc">'+(esR?'Estimación basada en datos públicos. Los valores reales varían según lender, historial crediticio y mercado al momento de la compra.':'Estimate based on public data. Actual values vary by lender, credit history, and market conditions at the time of purchase.')+'</div></div>';
 
   el.innerHTML = html;
 }
@@ -2023,28 +2009,34 @@ function casaSection(title, rows) {
 
 function getCasaSearchQueries() {
   var isEs = lang === 'es';
+  var i1='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><rect x="5" y="12" width="2" height="7" fill="#007AFF" stroke="none"/><rect x="11" y="12" width="2" height="7" fill="#007AFF" stroke="none"/><rect x="17" y="12" width="2" height="7" fill="#007AFF" stroke="none"/><polygon points="12 2 2 10 22 10" fill="#007AFF" stroke="none"/></svg>';
+  var i2='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5856D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="15" x2="15.01" y2="15"/><line x1="9" y1="15" x2="15" y2="9"/></svg>';
+  var i3='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34C759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+  var i4='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF9500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+  var i5='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="14" x2="6" y2="18"/><line x1="10" y1="14" x2="10" y2="18"/><line x1="14" y1="14" x2="14" y2="18"/><line x1="18" y1="14" x2="18" y2="18"/><polyline points="2 10 12 2 22 10"/></svg>';
+  var i6='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#32ADE6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>';
   return [
-    {icon:'[B]',bg:'rgba(0,122,255,.1)',
+    {icon:i1,bg:'rgba(0,122,255,.1)',
      title:isEs?'Tasa hipotecaria actual':'Current mortgage rate',
      query:'mortgage interest rate {zona} 2026 average',
-     desc:isEs?'APR anual — pégalo en Tasa de interés':'Annual APR — paste in Interest Rate'},
-    {icon:'[B]',bg:'rgba(88,86,214,.1)',
+     desc:isEs?'APR anual - pegalo en Tasa de interes':'Annual APR - paste in Interest Rate'},
+    {icon:i2,bg:'rgba(88,86,214,.1)',
      title:'Property Tax Rate',
      query:'property tax rate {zona} Illinois 2026 percentage annual',
-     desc:isEs?'% anual ó monto anual $ — pégalo en Property Tax':'Annual % or annual $ — paste in Property Tax'},
-    {icon:'[s]',bg:'rgba(52,199,89,.1)',
+     desc:isEs?'% anual o monto anual $ - pegalo en Property Tax':'Annual % or annual $ - paste in Property Tax'},
+    {icon:i3,bg:'rgba(52,199,89,.1)',
      title:isEs?'Seguro de casa':'Home insurance rate',
      query:'average home insurance cost {zona} Illinois 2026 annual',
-     desc:isEs?'% anual ó monto anual $ — pégalo en Seguro de casa':'Annual % or annual $ — paste in Home Insurance'},
-    {icon:'[H]',bg:'rgba(255,149,0,.1)',
+     desc:isEs?'% anual o monto anual $ - pegalo en Seguro':'Annual % or annual $ - paste in Home Insurance'},
+    {icon:i4,bg:'rgba(255,149,0,.1)',
      title:isEs?'HOA fees promedio':'Average HOA fees',
      query:'HOA fees average {zona} Illinois monthly',
-     desc:isEs?'Monto mensual fijo — pégalo en HOA':'Fixed monthly amount — paste in HOA'},
-    {icon:'[m]',bg:'rgba(255,59,48,.1)',
+     desc:isEs?'Monto mensual fijo - pegalo en HOA':'Fixed monthly amount - paste in HOA'},
+    {icon:i5,bg:'rgba(255,59,48,.1)',
      title:isEs?'Precio por sq ft':'Price per sq ft',
      query:'average home price per square foot {zona} Illinois 2026',
      desc:isEs?'Para comparar si el precio es justo':'To compare if the price is fair'},
-    {icon:'[C]',bg:'rgba(50,173,230,.1)',
+    {icon:i6,bg:'rgba(50,173,230,.1)',
      title:isEs?'Mercado inmobiliario':'Real estate market',
      query:'real estate market {zona} Illinois 2026 trends',
      desc:isEs?'Tendencias y precios de la zona':'Area trends and prices'},
@@ -2062,7 +2054,7 @@ function updateCasaLinks() {
     return '<a class="search-link" href="'+url+'" target="_blank">'+
       '<div class="search-icon-box" style="background:'+q.bg+'">'+q.icon+'</div>'+
       '<div class="search-info"><div class="search-title">'+q.title+'</div><div class="search-desc">'+q.desc+'</div></div>'+
-      '<span style="font-size:18px;color:var(--text3);">›</span></a>';
+      '<span style="font-size:18px;color:var(--text3);">></span></a>';
   }).join('');
 }
 
@@ -2074,7 +2066,7 @@ function saveAnalysis(){
   var name=prompt(es?'Nombre para esta estimación (ej: Casa Hometown $247k):':'Name for this estimate (e.g. Hometown Home $247k):');
   if(!name||!name.trim())return;
   var piti=document.getElementById('c_piti');
-  var pitiVal=piti?piti.textContent:'—';
+  var pitiVal=piti?piti.textContent:'-';
   var analysis={
     id:Date.now(),
     name:name.trim(),
@@ -2139,7 +2131,7 @@ function renderSavedAnalyses(){
   saved.forEach(function(a){
     html+='<div class="saved-analysis-item">';
     html+='<div><div class="saved-analysis-name">'+a.name+'</div>';
-    html+='<div class="saved-analysis-val">$'+Number(a.precio).toLocaleString()+' · PITI '+a.piti+' · '+a.date+'</div></div>';
+    html+='<div class="saved-analysis-val">$'+Number(a.precio).toLocaleString()+' - PITI '+a.piti+' - '+a.date+'</div></div>';
     html+='<div class="saved-analysis-btns">';
     html+='<button class="saved-load-btn" onclick="loadAnalysis('+a.id+')">'+(es?'Cargar':'Load')+'</button>';
     html+='<button class="saved-del-btn" onclick="deleteAnalysis('+a.id+')">X</button>';
@@ -2175,3 +2167,7 @@ checkSession();
 </script>
 </body>
 </html>
+      <div class="casa-panel" id="panel-creporte">
+        <div class="sec-label" data-lang="sec_reporte">Reporte completo de compra</div>
+        <div id="c_reporte"></div>
+      </div>
