@@ -335,6 +335,43 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .debt-months-btn{font-size:11px;color:var(--yellow);background:rgba(255,149,0,.1);border:none;border-radius:20px;padding:3px 9px;cursor:pointer;font-family:inherit;font-weight:500;margin-left:auto;}
 .debt-months-btn:active{opacity:.7;}
 .proj-sim-note{font-size:10px;opacity:.65;margin-top:8px;text-align:center;font-style:italic;}
+
+
+/* =============================================
+   RESPONSIVE — DESKTOP (min-width: 700px)
+   Safe: only max-width centering + minor spacing
+   ============================================= */
+@media (min-width: 700px) {
+  body {
+    background: var(--bg);
+  }
+
+  /* Center the whole app with max-width */
+  #screenActivation,
+  #screenOnboarding,
+  #screenApp {
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Activation card more padding */
+  .act-card {
+    margin-top: 60px;
+    padding: 48px 44px;
+  }
+
+  /* Slightly larger text */
+  .header-brand-name { font-size: 21px; }
+  .score-val { font-size: 32px; }
+  .kpi-value { font-size: 22px; }
+
+  /* Tabs don't need to scroll on desktop */
+  .tab-bar { overflow-x: visible; }
+
+  /* More padding on panels */
+  .panel { padding: 18px 20px; }
+}
 </style>
 </head>
 <body>
