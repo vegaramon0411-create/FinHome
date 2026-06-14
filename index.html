@@ -372,9 +372,30 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   /* More padding on panels */
   .panel { padding: 18px 20px; }
 }
+
+.row-hint{font-size:10px;color:#8e8e93;margin-top:1px;font-style:italic;}
+.row-hint{font-size:10px;color:#8e8e93;margin-top:1px;font-style:italic;display:block;}
+
+/* ⓘ Help system */
+.help-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:transparent;border:1px solid #c7c7cc;color:#c7c7cc;font-size:9px;font-weight:700;cursor:pointer;margin-left:5px;vertical-align:middle;flex-shrink:0;line-height:1;font-style:normal;}
+.help-btn:active{background:#f0f0f5;border-color:#8e8e93;color:#8e8e93;}
+.help-tooltip{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:20px 20px 36px;box-shadow:0 -4px 24px rgba(0,0,0,.15);z-index:9999;display:none;border-top:0.5px solid #e5e5ea;}
+.help-tooltip.open{display:block;}
+.help-tooltip-title{font-size:15px;font-weight:700;color:#1c1c1e;margin-bottom:8px;}
+.help-tooltip-body{font-size:13px;color:#555;line-height:1.6;}
+.help-tooltip-close{position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;background:#f2f2f7;border:none;font-size:14px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.help-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;background:rgba(0,0,0,.2);display:none;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+<!-- HELP TOOLTIP (at body level for proper z-index) -->
+<div id="helpOverlay" onclick="closeHelp()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;background:rgba(0,0,0,.3);"></div>
+<div id="helpTooltip" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:20px 20px 36px;box-shadow:0 -4px 24px rgba(0,0,0,.15);z-index:9999;border-top:0.5px solid #e5e5ea;">
+  <button onclick="closeHelp()" style="position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;background:#f2f2f7;border:none;font-size:14px;color:#666;cursor:pointer;">x</button>
+  <div id="helpTitle" style="font-size:15px;font-weight:700;color:#1c1c1e;margin-bottom:8px;margin-right:36px;"></div>
+  <div id="helpBody" style="font-size:13px;color:#555;line-height:1.6;"></div>
+</div>
 
 <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
 
@@ -400,6 +421,34 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="ob-actions">
       <button class="ob-btn-skip" onclick="finishOnboarding()" data-lang="ob_skip">Omitir</button>
       <button class="ob-btn-next" id="obNextBtn" onclick="obNext()" data-lang="ob_finish">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="modalExport" style="display:none;" onclick="if(event.target===this)closeExportModal()">
+  <div class="modal-box">
+    <div class="modal-title" id="exportModalTitle">¿Qué deseas exportar?</div>
+    <div class="modal-sub" id="exportModalSub">Selecciona uno o ambos formatos</div>
+    <div style="margin:18px 0;display:flex;flex-direction:column;gap:12px;">
+      <label style="display:flex;align-items:center;gap:12px;padding:14px;background:#f8f9ff;border-radius:10px;border:1.5px solid #e5e5ea;cursor:pointer;" id="exportJsonRow">
+        <input type="checkbox" id="exportJsonCheck" checked style="width:18px;height:18px;accent-color:#007aff;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1c1c1e;" id="exportJsonTitle">Respaldo JSON</div>
+          <div style="font-size:12px;color:#8e8e93;" id="exportJsonDesc">Para restaurar tus datos en cualquier dispositivo</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:12px;padding:14px;background:#f8f9ff;border-radius:10px;border:1.5px solid #e5e5ea;cursor:pointer;" id="exportPdfRow">
+        <input type="checkbox" id="exportPdfCheck" checked style="width:18px;height:18px;accent-color:#007aff;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1c1c1e;" id="exportPdfTitle">Reporte PDF</div>
+          <div style="font-size:12px;color:#8e8e93;" id="exportPdfDesc">Resumen completo para compartir o imprimir</div>
+        </div>
+      </label>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="modal-btn secondary" onclick="closeExportModal()" id="exportCancelBtn">Cancelar</button>
+      <button class="modal-btn primary" onclick="doExport()" id="exportDoBtn">Exportar</button>
     </div>
   </div>
 </div>
@@ -472,7 +521,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         </div>
       </div>
       <div class="header-actions-row">
-        <button class="hbtn-icon" onclick="exportData()">
+        <button class="hbtn-icon" onclick="openExportModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span class="btn-lbl" data-lang="btn_exp">Exportar</span>
         </button>
@@ -577,7 +626,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <div id="incomeCards"></div>
       <div class="sec-label" data-lang="sec_pasivos">Ingresos pasivos</div>
       <div class="card">
-        <div class="card-header"><span class="card-title" data-lang="card_pasivos">Fuentes adicionales</span><span class="card-total" id="total-pasivos">$0</span></div>
+        <div class="card-header"><span class="card-title" data-lang="card_pasivos">Fuentes adicionales</span><i class="help-btn" onclick="showHelp('passive')">i</i><span class="card-total" id="total-pasivos">$0</span></div>
         <div id="list-pasivos"></div>
         <div class="add-form">
           <input id="passiveName" placeholder="Fuente de ingreso...">
@@ -592,11 +641,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="panel" id="panel-gastos">
       <div class="sec-label" data-lang="sec_nec">Necesidades — 50%</div>
       <div class="card">
-        <div class="card-header"><span class="card-title" data-lang="card_nec">Vivienda &amp; esenciales</span><span class="card-total" id="total-necesidades">$0</span></div>
+        <div class="card-header"><span class="card-title" data-lang="card_nec">Vivienda &amp; esenciales</span><i class="help-btn" onclick="showHelp('nec')">i</i><span class="card-total" id="total-necesidades">$0</span></div>
         <div id="list-necesidades"></div>
         <div class="add-form">
-          <input id="name-necesidades" placeholder="Gasto...">
-          <input id="amt-necesidades" type="number" class="amt" placeholder="$0">
+          <input id="name-necesidades" placeholder="Gasto..." title="Nombre del gasto (ej: Gasolina, Seguro)">
+          <input id="amt-necesidades" type="number" class="amt" placeholder="$0" title="Monto mensual en dolares">
           <select id="person-necesidades" style="max-width:90px;font-size:12px;"></select>
           <select id="tag-necesidades"><option value="">fijo</option><option value="temp">temporal</option></select>
           <button class="btn-plus" onclick="addExpense('necesidades')">+</button>
@@ -604,10 +653,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       </div>
       <div class="sec-label" data-lang="sec_des">Deseos — 30%</div>
       <div class="card">
-        <div class="card-header"><span class="card-title" data-lang="card_des">Gastos personales</span><span class="card-total" id="total-deseos">$0</span></div>
+        <div class="card-header"><span class="card-title" data-lang="card_des">Gastos personales</span><i class="help-btn" onclick="showHelp('des')">i</i><span class="card-total" id="total-deseos">$0</span></div>
         <div id="list-deseos"></div>
         <div class="add-form">
-          <input id="name-deseos" placeholder="Gasto...">
+          <input id="name-deseos" placeholder="Gasto..." title="Gasto personal (ej: Netflix, Salidas)">
           <input id="amt-deseos" type="number" class="amt" placeholder="$0">
           <select id="person-deseos" style="max-width:90px;font-size:12px;"></select>
           <select id="tag-deseos"><option value="">variable</option><option value="temp">temporal</option></select>
@@ -620,10 +669,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="panel" id="panel-ahorros">
       <div class="sec-label" data-lang="sec_aho">Inversiones &amp; Ahorros — 20%</div>
       <div class="card">
-        <div class="card-header"><span class="card-title" data-lang="card_aho">Aportaciones mensuales</span><span class="card-total" id="total-ahorros">$0</span></div>
+        <div class="card-header"><span class="card-title" data-lang="card_aho">Aportaciones mensuales</span><i class="help-btn" onclick="showHelp('aho')">i</i><span class="card-total" id="total-ahorros">$0</span></div>
         <div id="list-ahorros"></div>
         <div class="add-form">
-          <input id="name-ahorros" placeholder="Inversión / Ahorro...">
+          <input id="name-ahorros" placeholder="Inversión / Ahorro..." title="(ej: Fidelity, SoFi, Fondo emergencia)">
           <input id="amt-ahorros" type="number" class="amt" placeholder="$0">
           <select id="person-ahorros" style="max-width:90px;font-size:12px;"></select>
           <select id="tag-ahorros"><option value="savings">inversión</option><option value="">ahorro</option></select>
@@ -650,8 +699,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <button class="casa-sub-btn active" onclick="showCasaTab('cdatos',this)" data-lang="ctab_datos">Datos</button>
         <button class="casa-sub-btn" onclick="showCasaTab('cresultado',this)" data-lang="ctab_resultado">Resultado</button>
         <button class="casa-sub-btn" onclick="showCasaTab('camort',this)" data-lang="ctab_amort">Amort.</button>
+
         <button class="casa-sub-btn" onclick="showCasaTab('cbuscar',this)" data-lang="ctab_buscar">Buscar</button>
-        <button class="casa-sub-btn" onclick="showCasaTab('creporte',this)" data-lang="ctab_creporte">Reporte</button>
+
       </div>
 
       <!-- DATOS -->
@@ -659,17 +709,17 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div class="sec-label" data-lang="sec_precio">Precio y financiamiento</div>
         <div class="input-card">
           <div class="input-row">
-            <div class="input-label-wrap"><div class="input-label" data-lang="c_precio">Precio de la casa</div><div class="input-sub" data-lang="c_precio_sub">Precio de lista</div></div>
+            <div class="input-label-wrap"><div class="input-label" data-lang="c_precio" style="display:flex;align-items:center;gap:4px;">Precio de la casa<i class="help-btn" onclick="showHelp('c_precio')">i</i></div><div class="input-sub" data-lang="c_precio_sub">Precio de lista</div></div>
             <input class="field-input" type="number" id="c_precio" value="280000" oninput="casaRecalc()">
             <span class="field-unit">$</span>
           </div>
           <div class="input-row">
-            <div class="input-label-wrap"><div class="input-label" data-lang="c_enganche">Enganche</div><div class="input-sub" data-lang="c_enganche_sub">Down payment %</div></div>
+            <div class="input-label-wrap"><div class="input-label" data-lang="c_enganche" style="display:flex;align-items:center;gap:4px;">Enganche<i class="help-btn" onclick="showHelp('c_enganche')">i</i></div><div class="input-sub" data-lang="c_enganche_sub">Down payment %</div></div>
             <input class="field-input" type="number" id="c_enganche" value="10" oninput="casaRecalc()">
             <span class="field-unit">%</span>
           </div>
           <div class="input-row">
-            <div class="input-label-wrap"><div class="input-label" data-lang="c_tasa">Tasa de interés</div><div class="input-sub" data-lang="c_tasa_sub">APR anual — búscala en Buscar</div></div>
+            <div class="input-label-wrap"><div class="input-label" data-lang="c_tasa" style="display:flex;align-items:center;gap:4px;">Tasa de interés<i class="help-btn" onclick="showHelp('c_tasa')">i</i></div><div class="input-sub" data-lang="c_tasa_sub">APR anual — búscala en Buscar</div></div>
             <input class="field-input" type="number" id="c_tasa" value="6.8" step="0.1" oninput="casaRecalc()">
             <span class="field-unit">%</span>
           </div>
@@ -691,7 +741,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div class="input-card">
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label" data-lang="c_tax_lbl">Property Tax</div>
+              <div class="input-label" data-lang="c_tax_lbl" style="display:flex;align-items:center;gap:4px;">Property Tax<i class="help-btn" onclick="showHelp('c_tax')">i</i></div>
               <div class="input-sub" data-lang="casa_tax_sub">% anual ó monto anual $ — la app calcula automático</div>
               <div class="calc-derived" id="c_tax_calc">= $0/mes</div>
               <div style="font-size:10px;color:var(--text3);" id="c_tax_mode">Detectando...</div>
@@ -701,7 +751,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           </div>
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label" data-lang="c_seguro_lbl">Seguro de casa</div>
+              <div class="input-label" data-lang="c_seguro_lbl" style="display:flex;align-items:center;gap:4px;">Seguro de casa<i class="help-btn" onclick="showHelp('c_seguro')">i</i></div>
               <div class="input-sub" data-lang="casa_seguro_sub">% anual ó monto anual $ — promedio 0.5–1%</div>
               <div class="calc-derived" id="c_seguro_calc">= $0/mes</div>
               <div style="font-size:10px;color:var(--text3);" id="c_seguro_mode">Detectando...</div>
@@ -711,7 +761,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           </div>
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label" data-lang="c_pmi_lbl">Seguro hipotecario (PMI)</div>
+              <div class="input-label" data-lang="c_pmi_lbl" style="display:flex;align-items:center;gap:4px;">Seguro hipotecario (PMI)<i class="help-btn" onclick="showHelp('c_pmi')">i</i></div>
               <div class="input-sub" data-lang="casa_pmi_sub">% del préstamo ó monto anual $ — si enganche &lt;20%</div>
               <div class="calc-derived" id="c_pmi_calc">= $0/mes</div>
               <div style="font-size:10px;color:var(--text3);" id="c_pmi_mode">Detectando...</div>
@@ -721,7 +771,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           </div>
           <div class="input-row">
             <div class="input-label-wrap">
-              <div class="input-label" data-lang="c_mant_lbl">Mantenimiento estimado</div>
+              <div class="input-label" data-lang="c_mant_lbl" style="display:flex;align-items:center;gap:4px;">Mantenimiento estimado<i class="help-btn" onclick="showHelp('c_mant')">i</i></div>
               <div class="input-sub" data-lang="casa_mant_sub">% anual ó monto anual $ — promedio 1%</div>
               <div class="calc-derived" id="c_mant_calc">= $0/mes</div>
               <div style="font-size:10px;color:var(--text3);" id="c_mant_mode">Detectando...</div>
@@ -734,7 +784,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div class="sec-label" data-lang="sec_fijo">Monto fijo mensual</div>
         <div class="input-card">
           <div class="input-row">
-            <div class="input-label-wrap"><div class="input-label" data-lang="c_hoa_lbl">HOA</div><div class="input-sub" data-lang="c_hoa_sub">Monto fijo mensual (si aplica)</div></div>
+            <div class="input-label-wrap"><div class="input-label" data-lang="c_hoa_lbl" style="display:flex;align-items:center;gap:4px;">HOA<i class="help-btn" onclick="showHelp('c_hoa')">i</i></div><div class="input-sub" data-lang="c_hoa_sub">Monto fijo mensual (si aplica)</div></div>
             <input class="field-input" type="number" id="c_hoa" value="0" oninput="casaRecalc()">
             <span class="field-unit">$</span>
           </div>
@@ -836,231 +886,30 @@ function toggleLang(){
 
 function applyLang(){
   var es = lang === 'es';
-  var lb=document.getElementById('langBtn');if(lb)lb.textContent=es?'EN':'ES';
-  var htmlEl=document.querySelector('html');if(htmlEl)htmlEl.lang=lang;
-
-  var T = {
-    // Header
-    header_tag: es?'Análisis financiero - 2026':'Financial analysis - 2026',
-    header_sub_text: es?'Método 50/30/20 - Planificación compra de casa':'50/30/20 Method - Home purchase planning',
-    // Buttons
-    btn_exp: es?'Exportar':'Export',
-    btn_imp: es?'Importar':'Import',
-    btn_salir: es?'Salir':'Sign out',
-    btn_integrantes: es?'Integrantes':'Members',
-    // Main tabs
-    tab_resumen: es?'Resumen':'Summary',
-    tab_ingresos: es?'Ingresos':'Income',
-    tab_gastos: es?'Gastos':'Expenses',
-    tab_ahorros: es?'Ahorros':'Savings',
-    tab_metodo: es?'50/30/20':'50/30/20',
-    tab_casa: es?'Casa':'Home',
-    // Casa sub tabs
-    ctab_datos: es?'Datos':'Data',
-    ctab_resultado: es?'Resultado':'Result',
-    ctab_amort: es?'Amort.':'Amort.',
-    ctab_buscar: es?'Buscar':'Search',
-    ctab_creporte: es?'Reporte':'Report',
-    // Resumen sections
-    sec_panorama: es?'Panorama general':'Overview',
-    sec_proyeccion: es?'Proyección de deudas':'Debt projection',
-    sec_dist: es?'Distribución':'Distribution',
-    sec_alertas: es?'Alertas':'Alerts',
-    // Projection card
-    proj_auto_title: es?'Proyección automática (meses reales de cada deuda)':'Automatic projection (real months per debt)',
-    proj_hoy: es?'Hoy':'Today',
-    proj_libera: es?'Se libera':'Released',
-    proj_after: es?'Al liquidar':'At payoff',
-    proj_sim_title: es?'Simulación manual':'Manual simulation',
-    proj_sim_meses: es?'Meses hipotéticos':'Hypothetical months',
-    proj_sim_sob: es?'Sobrante simulado:':'Simulated surplus:',
-    proj_sob_despues: es?'Sobrante después':'Surplus after',
-    proj_pago_mes: es?'Pago/mes por deuda':'Payment/mo per debt',
-    proj_sim_note: es?'Simulación - no modifica los meses reales de cada deuda':'Simulation - does not modify the real months per debt',
-    // Charts
-    chart_comp: es?'Composición del presupuesto':'Budget composition',
-    chart_vs: es?'Real vs Meta 50/30/20':'Actual vs 50/30/20 Target',
-    // Income panel
-    sec_salarios: es?'Salarios semanales':'Weekly salaries',
-    sec_pasivos: es?'Ingresos pasivos':'Passive income',
-    card_pasivos: es?'Fuentes adicionales':'Additional sources',
-    tip_pasivos: es?'Los ahorros en cuenta de alto rendimiento generan interés mensual. Mantenlos intocables.':'High-yield savings generate monthly interest. Keep them untouched.',
-    // Expenses panel
-    sec_nec: es?'Necesidades - 50%':'Needs - 50%',
-    card_nec: es?'Vivienda & esenciales':'Housing & essentials',
-    sec_des: es?'Deseos - 30%':'Wants - 30%',
-    card_des: es?'Gastos personales':'Personal expenses',
-    // Savings panel
-    sec_aho: es?'Inversiones & Ahorros - 20%':'Savings & Investments - 20%',
-    card_aho: es?'Aportaciones mensuales':'Monthly contributions',
-    tip_fondo: es?'Fondo de emergencia: mantén 3-6 meses de gastos en una cuenta separada e intocable.':'Emergency fund: keep 3-6 months of expenses in a separate untouchable account.',
-    // 50/30/20 panel
-    sec_metodo: es?'Método 50/30/20':'50/30/20 Method',
-    sec_tips: es?'Tips personalizados':'Personalized tips',
-    sec_viabilidad: es?'Viabilidad de la casa':'Home viability',
-    // Casa datos
-    sec_precio: es?'Precio y financiamiento':'Price & financing',
-    sec_costos: es?'Costos adicionales (% anual o monto anual $)':'Additional costs (annual % or annual $ amount)',
-    sec_fijo: es?'Monto fijo mensual':'Fixed monthly amount',
-    sec_extra: es?'Pago extra mensual (opcional)':'Extra monthly payment (optional)',
-    c_precio: es?'Precio de la casa':'Home price',
-    c_precio_sub: es?'Precio de lista':'List price',
-    c_enganche: es?'Enganche':'Down payment',
-    c_enganche_sub: es?'Down payment %':'Down payment %',
-    c_tasa: es?'Tasa de interés':'Interest rate',
-    c_tasa_sub: es?'APR anual - búscala en Buscar':'Annual APR - find it in Search',
-    c_plazo: es?'Plazo':'Term',
-    c_tax_lbl: es?'Property Tax':'Property Tax',
-    c_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
-    c_seguro_lbl: es?'Seguro de casa':'Home insurance',
-    c_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
-    c_pmi_lbl: es?'Seguro hipotecario (PMI)':'Private Mortgage Insurance (PMI)',
-    c_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
-    c_mant_lbl: es?'Mantenimiento estimado':'Estimated maintenance',
-    c_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
-    c_hoa_lbl: es?'HOA':'HOA',
-    c_hoa_sub: es?'Monto fijo mensual (si aplica)':'Fixed monthly amount (if applicable)',
-    c_extra_lbl: es?'Pago extra mensual (opcional)':'Extra monthly payment (optional)',
-    c_extra_sub: es?'Reduce años y ahorra en intereses':'Reduces years and saves on interest',
-    casa_btn: es?'Ver análisis completo ->':'View full analysis ->',
-    casa_aviso: es?'Este análisis es una estimación basada en datos públicos. Los valores reales pueden variar según tu lender, historial crediticio y condiciones del mercado.':'This analysis is an estimate based on public data. Actual values may vary by lender, credit history, and market conditions.',
-    // Segment buttons
-    plazo_15: es?'15 años':'15 years',
-    plazo_20: es?'20 años':'20 years',
-    plazo_30: es?'30 años':'30 years',
-    // Casa resultado
-    piti_label: es?'Pago mensual total (PITI)':'Total monthly payment (PITI)',
-    c_pi_lbl: es?'Principal + Interés':'Principal + Interest',
-    c_pi_sub: es?'Pago base hipoteca':'Base mortgage payment',
-    c_int_lbl: es?'Total intereses':'Total interest',
-    c_int_sub: es?'En todo el plazo':'Over the full term',
-    c_costo_lbl: es?'Costo real/mes':'Real cost/month',
-    c_costo_sub: es?'Todos los gastos':'All expenses included',
-    c_pct_lbl: es?'% del ingreso':'% of income',
-    c_pct_sub: es?'Meta: <28%':'Target: <28%',
-    c_eng_lbl: es?'Enganche $':'Down payment $',
-    c_eng_sub: es?'Down payment':'Down payment',
-    c_total_lbl: es?'Total pagado':'Total paid',
-    sec_diag: es?'Diagnóstico':'Diagnosis',
-    sec_extra_pago: es?'Con pago extra':'With extra payment',
-    c_term_lbl: es?'Terminas en':'You finish in',
-    c_term_sub: es?'Con pago extra':'With extra payment',
-    c_ahorra_lbl: es?'Ahorras en intereses':'You save in interest',
-    c_ahorra_sub: es?'vs sin pago extra':'vs without extra payment',
-    // Amortization
-    sec_amort: es?'Tabla de amortización anual':'Annual amortization table',
-    amort_anio: es?'Año':'Year',
-    amort_pago: es?'Pago':'Payment',
-    amort_principal: es?'Principal':'Principal',
-    amort_interes: es?'Interés':'Interest',
-    amort_balance: es?'Balance':'Balance',
-    // Search
-    sec_zona: es?'Tu zona de búsqueda':'Your search area',
-    sec_busq: es?'Búsquedas inteligentes':'Smart searches',
-    // Reporte
-    sec_reporte: es?'Reporte completo de compra':'Complete purchase report',
-    // Modals
-    modal_logout_title: es?'¿Cerrar sesión?':'Sign out?',
-    modal_logout_sub: es?'Tus datos quedarán guardados en este dispositivo. Podrás volver a entrar con tu correo y código.':'Your data will remain saved on this device. You can sign back in with your email and code.',
-    modal_cancel: es?'Cancelar':'Cancel',
-    modal_logout_btn: es?'Cerrar sesión':'Sign out',
-    modal_members_title: es?'Integrantes del hogar':'Household members',
-    modal_members_sub: es?'Sus salarios aparecerán en la sección Ingresos.':'Their salaries will appear in the Income section.',
-    modal_done: es?'Listo':'Done',
-    modal_months_title: es?'Meses para liquidar':'Months to pay off',
-    modal_months_sub: es?'Ajusta cuántos meses tienes para pagar esta deuda.':'Adjust how many months you have to pay off this debt.',
-    modal_apply: es?'Aplicar':'Apply',
-    // Onboarding
-    ob_skip: es?'Omitir':'Skip',
-    ob_finish: es?'Comenzar!':'Get started!',
-    auto_tip_title: es?'Auto-detección':'Auto-detection',
-    per_mes: es?'/mes':'/mo',
-    casa_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
-    casa_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
-    casa_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
-    casa_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
-    auto_tip_desc: es?'Puedes poner % anual (ej: 2.62) o monto anual $ (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.':'You can enter annual % (e.g. 2.62) or annual $ amount (e.g. 3500). The app detects which one and calculates the monthly payment automatically.',
-    auto_tip_title: es?'Auto-detección':'Auto-detection',
-    per_mes: es?'/mes':'/mo',
-    casa_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
-    casa_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
-    casa_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
-    casa_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
-    auto_tip_desc: es?'Puedes poner % anual (ej: 2.62) o monto anual $ (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.':'You can enter annual % (e.g. 2.62) or annual $ amount (e.g. 3500). The app detects which one and calculates the monthly payment automatically.',
-    // Card titles
-    card_pasivos: es?'Fuentes adicionales':'Additional sources',
-    card_nec: es?'Vivienda & esenciales':'Housing & essentials',
-    card_des: es?'Gastos personales':'Personal expenses',
-    card_aho: es?'Aportaciones mensuales':'Monthly contributions',
-    // Tips
-    tip_pasivos: es?'Los ahorros en cuenta de alto rendimiento generan interés mensual. Mantenlos intocables.':'High-yield savings generate monthly interest. Keep them untouched.',
-    tip_fondo: es?'Fondo de emergencia: mantén 3-6 meses de gastos en una cuenta separada e intocable.':'Emergency fund: keep 3-6 months of expenses in a separate untouchable account.',
-    // Activation screen
-    act_title: es?'Bienvenido a FinHome':'Welcome to FinHome',
-    act_sub: es?'Ingresa tu correo y el código de activación que recibiste.':'Enter your email and the activation code you received.',
-    act_btn: es?'Activar':'Activate',
-    act_note: es?'El código activa hasta 2 dispositivos. Guárdalo en un lugar seguro.':'The code activates up to 2 devices. Keep it in a safe place.',
-  };
-
-  // ---- Apply to all data-lang elements ----
-  document.querySelectorAll('[data-lang]').forEach(function(el){
-    var key = el.getAttribute('data-lang');
-    if(T[key] !== undefined) el.textContent = T[key];
-  });
-
-  // Apply placeholders
-  var placeholders = {
-    'passiveName': es?'Fuente de ingreso...':'Income source...',
-    'passiveAmt': '$0',
-    'name-necesidades': es?'Gasto...':'Expense...',
-    'amt-necesidades': '$0',
-    'name-deseos': es?'Gasto...':'Expense...',
-    'amt-deseos': '$0',
-    'name-ahorros': es?'Inversión / Ahorro...':'Investment / Savings...',
-    'amt-ahorros': '$0',
-    'newMemberName': es?'Nombre del integrante...':'Household member name...',
-    'c_zona': es?'Ej: Hometown, Illinois':'E.g.: Hometown, Illinois',
-  };
-  Object.keys(placeholders).forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.placeholder = placeholders[id];
-  });
-
-  // Apply select options
-  function setSelectOpts(id, opts) {
-    var sel = document.getElementById(id);
-    if(!sel) return;
-    var vals = [];
-    for(var i=0;i<sel.options.length;i++) vals.push(sel.options[i].value);
-    for(var j=0;j<opts.length&&j<sel.options.length;j++) {
-      sel.options[j].textContent = opts[j];
-    }
-  }
-  setSelectOpts('tag-necesidades', es?['fijo','temporal']:['fixed','temporary']);
-  setSelectOpts('tag-deseos', es?['variable','temporal']:['variable','temporary']);
-  setSelectOpts('tag-ahorros', es?['inversión','ahorro']:['investment','savings']);
-  // Person selects - rebuild with current members (only if elements exist)
+  // Update fixed item names when language changes
   try {
-    ['person-necesidades','person-deseos','person-ahorros'].forEach(function(id){
-      var sel=document.getElementById(id);
-      if(!sel)return;
-      var prev=sel.value;
-      sel.innerHTML='<option value="">'+(es?'Todos':'Everyone')+'</option>';
-      if(state && state.members) {
-        state.members.forEach(function(m){
-          var opt=document.createElement('option');
-          opt.value=m.name;opt.textContent=m.name;sel.appendChild(opt);
-        });
-      }
-      sel.value=prev;
-    });
-  } catch(e){}
-
-  // Update member button label
-  try {
-    var membLblEl = document.getElementById('membersLabel');
-    if(membLblEl) membLblEl.textContent = es ? 'Integrantes' : 'Members';
+    if(state&&state.necesidades) ensureFixedItems();
   } catch(e) {}
+  // Also update existing names directly
+  try {
+    var lockedNamesMap={
+      'hipoteca':es?'Hipoteca':'Mortgage',
+      'mortgage':es?'Hipoteca':'Mortgage',
+      'impuesto predial':es?'Impuesto predial':'Property Tax',
+      'property tax':es?'Impuesto predial':'Property Tax',
+      'servicios':es?'Servicios':'Utilities',
+      'utilities':es?'Servicios':'Utilities',
+      'services':es?'Servicios':'Utilities'
+    };
+    if(state&&state.necesidades){
+      state.necesidades.forEach(function(item){
+        var nl=(item.name||'').toLowerCase();
+        if(lockedNamesMap[nl]) item.name=lockedNamesMap[nl];
+      });
+    }
+  } catch(e) {}
+  // Update locked item names when language changes
+  
 
   // How to use + aviso section (wrapped safely)
   try {
@@ -1089,6 +938,171 @@ function applyLang(){
   // Update search how-to box
   var howto = document.querySelector('.verdict-desc');
 
+  // ---- COMPLETE TRANSLATION TABLE ----
+  var T = {
+    header_tag: es?'Análisis financiero - 2026':'Financial analysis - 2026',
+    header_sub_text: es?'Método 50/30/20 - Planificación compra de casa':'50/30/20 Method - Home purchase planning',
+    btn_exp: es?'Exportar':'Export',
+    btn_imp: es?'Importar':'Import',
+    btn_salir: es?'Salir':'Sign out',
+    btn_integrantes: es?'Integrantes':'Members',
+    tab_resumen: es?'Resumen':'Summary',
+    tab_ingresos: es?'Ingresos':'Income',
+    tab_gastos: es?'Gastos':'Expenses',
+    tab_ahorros: es?'Ahorros':'Savings',
+    tab_metodo: es?'50/30/20':'50/30/20',
+    tab_casa: es?'Casa':'Home',
+    ctab_datos: es?'Datos':'Data',
+    ctab_resultado: es?'Resultado':'Result',
+    ctab_amort: es?'Amort.':'Amort.',
+    ctab_buscar: es?'Buscar':'Search',
+
+    sec_panorama: es?'Panorama general':'Overview',
+    sec_proyeccion: es?'Proyección de deudas':'Debt projection',
+    sec_dist: es?'Distribución':'Distribution',
+    sec_alertas: es?'Alertas':'Alerts',
+    proj_auto_title: es?'Proyección automática (meses reales de cada deuda)':'Automatic projection (real months per debt)',
+    proj_hoy: es?'Hoy':'Today',
+    proj_libera: es?'Se libera':'Released',
+    proj_after: es?'Al liquidar':'At payoff',
+    proj_sim_title: es?'Simulación manual':'Manual simulation',
+    proj_sim_meses: es?'Meses hipotéticos':'Hypothetical months',
+    proj_sim_sob: es?'Sobrante simulado:':'Simulated surplus:',
+    proj_sob_despues: es?'Sobrante después':'Surplus after',
+    proj_pago_mes: es?'Pago/mes por deuda':'Payment/mo per debt',
+    proj_sim_note: es?'Simulación - no modifica los meses reales de cada deuda':'Simulation - does not modify the real months per debt',
+    chart_comp: es?'Composición del presupuesto':'Budget composition',
+    chart_vs: es?'Real vs Meta 50/30/20':'Actual vs 50/30/20 Target',
+    sec_salarios: es?'Salarios semanales':'Weekly salaries',
+    sec_pasivos: es?'Ingresos pasivos':'Passive income',
+    card_pasivos: es?'Fuentes adicionales':'Additional sources',
+    tip_pasivos: es?'Los ahorros en cuenta de alto rendimiento generan interés mensual. Mantenlos intocables.':'High-yield savings generate monthly interest. Keep them untouched.',
+    sec_nec: es?'Necesidades - 50%':'Needs - 50%',
+    card_nec: es?'Vivienda & esenciales':'Housing & essentials',
+    sec_des: es?'Deseos - 30%':'Wants - 30%',
+    card_des: es?'Gastos personales':'Personal expenses',
+    sec_aho: es?'Inversiones & Ahorros - 20%':'Savings & Investments - 20%',
+    card_aho: es?'Aportaciones mensuales':'Monthly contributions',
+    tip_fondo: es?'Fondo de emergencia: mantén 3-6 meses de gastos en una cuenta separada e intocable.':'Emergency fund: keep 3-6 months of expenses in a separate untouchable account.',
+    sec_metodo: es?'Método 50/30/20':'50/30/20 Method',
+    sec_tips: es?'Tips personalizados':'Personalized tips',
+    sec_viabilidad: es?'Viabilidad de la casa':'Home viability',
+    sec_precio: es?'Precio y financiamiento':'Price & financing',
+    sec_costos: es?'Costos adicionales (% anual o monto anual $)':'Additional costs (annual % or annual $ amount)',
+    sec_fijo: es?'Monto fijo mensual':'Fixed monthly amount',
+    sec_extra: es?'Pago extra mensual (opcional)':'Extra monthly payment (optional)',
+    c_precio: es?'Precio de la casa':'Home price',
+    c_precio_sub: es?'Precio de lista':'List price',
+    c_enganche: es?'Enganche':'Down payment',
+    c_enganche_sub: es?'Down payment %':'Down payment %',
+    c_tasa: es?'Tasa de interés':'Interest rate',
+    c_tasa_sub: es?'APR anual - búscala en Buscar':'Annual APR - find it in Search',
+    c_plazo: es?'Plazo':'Term',
+    c_tax_lbl: es?'Property Tax':'Property Tax',
+    c_tax_sub: es?'% anual ó monto anual $ - la app calcula automático':'Annual % or annual $ - app calculates automatically',
+    c_seguro_lbl: es?'Seguro de casa':'Home insurance',
+    c_seguro_sub: es?'% anual ó monto anual $ - promedio 0.5-1%':'Annual % or annual $ - avg 0.5-1%',
+    c_pmi_lbl: es?'Seguro hipotecario (PMI)':'Private Mortgage Insurance (PMI)',
+    c_pmi_sub: es?'% del préstamo ó monto anual $ - si enganche <20%':'% of loan or annual $ - if down payment <20%',
+    c_mant_lbl: es?'Mantenimiento estimado':'Estimated maintenance',
+    c_mant_sub: es?'% anual ó monto anual $ - promedio 1%':'Annual % or annual $ - avg 1%',
+    c_hoa_lbl: es?'HOA':'HOA',
+    c_hoa_sub: es?'Monto fijo mensual (si aplica)':'Fixed monthly amount (if applicable)',
+    c_extra_lbl: es?'Pago extra mensual (opcional)':'Extra monthly payment (optional)',
+    c_extra_sub: es?'Reduce años y ahorra en intereses':'Reduces years and saves on interest',
+    casa_btn: es?'Ver análisis completo ->':'View full analysis ->',
+    casa_aviso: es?'Este análisis es una estimación basada en datos públicos. Los valores reales pueden variar según tu lender, historial crediticio y condiciones del mercado.':'This analysis is an estimate based on public data. Actual values may vary by lender, credit history, and market conditions.',
+    plazo_15: es?'15 años':'15 years',
+    plazo_30: es?'30 años':'30 years',
+    piti_label: es?'Pago mensual total (PITI)':'Total monthly payment (PITI)',
+    c_pi_lbl: es?'Principal + Interés':'Principal + Interest',
+    c_pi_sub: es?'Pago base hipoteca':'Base mortgage payment',
+    c_int_lbl: es?'Total intereses':'Total interest',
+    c_int_sub: es?'En todo el plazo':'Over the full term',
+    c_costo_lbl: es?'Costo real/mes':'Real cost/month',
+    c_costo_sub: es?'Todos los gastos':'All expenses included',
+    c_pct_lbl: es?'% del ingreso':'% of income',
+    c_pct_sub: es?'Meta: <28%':'Target: <28%',
+    c_eng_lbl: es?'Enganche $':'Down payment $',
+    c_eng_sub: es?'Down payment':'Down payment',
+    c_total_lbl: es?'Total pagado':'Total paid',
+    sec_diag: es?'Diagnóstico':'Diagnosis',
+    sec_extra_pago: es?'Con pago extra':'With extra payment',
+    c_term_lbl: es?'Terminas en':'You finish in',
+    c_term_sub: es?'Con pago extra':'With extra payment',
+    c_ahorra_lbl: es?'Ahorras en intereses':'You save in interest',
+    c_ahorra_sub: es?'vs sin pago extra':'vs without extra payment',
+    sec_amort: es?'Tabla de amortización anual':'Annual amortization table',
+    amort_anio: es?'Año':'Year',
+    amort_pago: es?'Pago':'Payment',
+    amort_principal: es?'Principal':'Principal',
+    amort_interes: es?'Interés':'Interest',
+    amort_balance: es?'Balance':'Balance',
+    sec_zona: es?'Tu zona de búsqueda':'Your search area',
+    sec_busq: es?'Búsquedas inteligentes':'Smart searches',
+    sec_reporte: es?'Reporte completo de compra':'Complete purchase report',
+    modal_logout_title: es?'Cerrar sesión':'Sign out',
+    modal_logout_sub: es?'Tus datos quedarán guardados en este dispositivo. Podrás volver a entrar con tu correo y código.':'Your data will remain saved on this device. You can sign back in with your email and code.',
+    modal_cancel: es?'Cancelar':'Cancel',
+    modal_logout_btn: es?'Cerrar sesión':'Sign out',
+    modal_members_title: es?'Integrantes del hogar':'Household members',
+    modal_members_sub: es?'Sus salarios aparecerán en la sección Ingresos.':'Their salaries will appear in the Income section.',
+    modal_done: es?'Listo':'Done',
+    modal_months_title: es?'Meses para liquidar':'Months to pay off',
+    modal_months_sub: es?'Ajusta cuántos meses tienes para pagar esta deuda.':'Adjust how many months you have to pay off this debt.',
+    modal_apply: es?'Aplicar':'Apply',
+    ob_skip: es?'Omitir':'Skip',
+    ob_finish: es?'Comenzar':'Get started',
+    auto_tip_title: es?'Auto-detección':'Auto-detection',
+    auto_tip_desc: es?'Puedes poner % anual (ej: 2.62) o monto anual $ (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.':'You can enter annual % (e.g. 2.62) or annual $ amount (e.g. 3500). The app detects which one and calculates the monthly payment automatically.',
+    per_mes: es?'/mes':'/mo',
+    act_sub: es?'Ingresa tu correo y el código de activación que recibiste.':'Enter your email and the activation code you received.',
+    act_btn: es?'Activar':'Activate',
+    act_note: es?'El código activa hasta 2 dispositivos. Guárdalo en un lugar seguro.':'The code activates up to 2 devices. Keep it in a safe place.',
+  };
+  // Apply all translations to data-lang elements
+  document.querySelectorAll('[data-lang]').forEach(function(el){
+    var key = el.getAttribute('data-lang');
+    if(T[key] !== undefined) el.textContent = T[key];
+  });
+  // Apply placeholders
+  var placeholders = {
+    'passiveName': es?'Fuente de ingreso...':'Income source...',
+    'name-necesidades': es?'Gasto...':'Expense...',
+    'amt-necesidades': '$0',
+    'name-deseos': es?'Gasto...':'Expense...',
+    'amt-deseos': '$0',
+    'name-ahorros': es?'Inversión / Ahorro...':'Investment / Savings...',
+    'amt-ahorros': '$0',
+    'newMemberName': es?'Nombre del integrante...':'Household member name...',
+    'c_zona': es?'Ej: Hometown, Illinois':'E.g.: Hometown, Illinois',
+  };
+  Object.keys(placeholders).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.placeholder = placeholders[id];
+  });
+  // Apply select tag options
+  function setSelectOpts(id, opts) {
+    var sel = document.getElementById(id);
+    if(!sel) return;
+    for(var j=0;j<opts.length&&j<sel.options.length;j++) {
+      sel.options[j].textContent = opts[j];
+    }
+  }
+  setSelectOpts('tag-necesidades', es?['fijo','temporal']:['fixed','temporary']);
+  setSelectOpts('tag-deseos', es?['variable','temporal']:['variable','temporary']);
+  setSelectOpts('tag-ahorros', es?['inversión','ahorro']:['investment','savings']);
+  // Update lang button
+  try {
+    var lb=document.getElementById('langBtn');if(lb)lb.textContent=es?'EN':'ES';
+    var htmlEl=document.querySelector('html');if(htmlEl)htmlEl.lang=lang;
+  } catch(e){}
+  // Update member button
+  try {
+    var membLblEl = document.getElementById('membersLabel');
+    if(membLblEl) membLblEl.textContent = es ? 'Integrantes' : 'Members';
+  } catch(e) {}
+
   // Update row tags that are already rendered (safe - querySelectorAll never throws)
   try {
     document.querySelectorAll('.row-tag.temp').forEach(function(el){ el.textContent = es?'deuda':'debt'; });
@@ -1108,14 +1122,12 @@ function applyLang(){
   updateCasaLinks();
 
   // Re-render all dynamic content with new language
-  // Use timeout to ensure lang variable is set before rendering
   var appEl=document.getElementById('screenApp');
   if(appEl && appEl.classList.contains('active')) {
-    setTimeout(function(){
-      try{ recalculate(true); }catch(e){}
-      try{ casaRecalc(); }catch(e){}
-      try{ updateProjection(); }catch(e){}
-    }, 0);
+    try{ recalculate(false); }catch(e){}
+    try{ casaRecalc(); }catch(e){}
+    try{ updateProjection(); }catch(e){}
+    try{ updatePersonSelects(); }catch(e){}
   }
 }
 
@@ -1165,8 +1177,11 @@ function doLogin(email,code){
 function loadAndShow(email){
   currentEmail=email;
   loadData(email);
+  ensureFixedItems();
+  saveData(email);
   showScreen('screenApp');
   var te=document.getElementById('toolbarEmail');if(te)te.textContent=email;
+  updatePersonSelects();
   recalculate(false);
   casaRecalc();
   applyLang();
@@ -1214,6 +1229,43 @@ function finishOnboarding(){var sess=JSON.parse(localStorage.getItem('fh_session
 // ---- STATE ----
 var state={members:[],passive:[],necesidades:[],deseos:[],ahorros:[],nid:100};
 var currentEmail='';
+
+function ensureFixedItems(){
+  var es=lang==='es';
+  var fixed=[
+    {key:'hipoteca',  nameEs:'Hipoteca',        nameEn:'Mortgage',     hint:'piti'},
+    {key:'servicios', nameEs:'Servicios',        nameEn:'Utilities',    hint:'utilities'},
+    {key:'predial',   nameEs:'Impuesto predial', nameEn:'Property Tax', hint:'tax'},
+  ];
+  fixed.forEach(function(f,idx){
+    var name=es?f.nameEs:f.nameEn;
+    // Check if already exists by key
+    var exists=state.necesidades.find(function(x){
+      var nl=(x.name||'').toLowerCase();
+      return nl===f.nameEs.toLowerCase()||nl===f.nameEn.toLowerCase();
+    });
+    if(!exists){
+      state.necesidades.unshift({
+        id:-(idx+1),
+        name:name,
+        amount:0,
+        tag:'fijo',
+        person:'',
+        months:0,
+        fixed:true
+      });
+    } else {
+      // Update name to current language
+      exists.name=name;
+      exists.fixed=true;
+    }
+  });
+  // Sort: fixed items always first
+  state.necesidades.sort(function(a,b){
+    var af=a.fixed?1:0, bf=b.fixed?1:0;
+    return bf-af;
+  });
+}
 var pieInst=null,barInst=null;
 
 function fmt(v){return '$'+Math.round(Number(v)||0).toLocaleString('en-US');}
@@ -1271,7 +1323,439 @@ function exportData(){
   var data=JSON.stringify({members:state.members,passive:state.passive,necesidades:state.necesidades,deseos:state.deseos,ahorros:state.ahorros,nid:state.nid,email:sess.email,exportDate:new Date().toISOString()},null,2);
   var blob=new Blob([data],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='finhome-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
-  alert('Datos exportados.');
+}
+
+function openExportModal(){
+  var es=lang==='es';
+  var m=document.getElementById('modalExport');if(!m)return;
+  // Translate modal text
+  var et=document.getElementById('exportModalTitle');if(et)et.textContent=es?'¿Qué deseas exportar?':'What do you want to export?';
+  var es2=document.getElementById('exportModalSub');if(es2)es2.textContent=es?'Selecciona uno o ambos formatos':'Select one or both formats';
+  var jt=document.getElementById('exportJsonTitle');if(jt)jt.textContent=es?'Respaldo JSON':'JSON Backup';
+  var jd=document.getElementById('exportJsonDesc');if(jd)jd.textContent=es?'Para restaurar tus datos en cualquier dispositivo':'To restore your data on any device';
+  var pt=document.getElementById('exportPdfTitle');if(pt)pt.textContent=es?'Reporte PDF':'PDF Report';
+  var pd=document.getElementById('exportPdfDesc');if(pd)pd.textContent=es?'Resumen completo para compartir o imprimir':'Complete summary to share or print';
+  var cb=document.getElementById('exportCancelBtn');if(cb)cb.textContent=es?'Cancelar':'Cancel';
+  var db=document.getElementById('exportDoBtn');if(db)db.textContent=es?'Exportar':'Export';
+  // Reset checkboxes
+  var jc=document.getElementById('exportJsonCheck');if(jc)jc.checked=true;
+  var pc=document.getElementById('exportPdfCheck');if(pc)pc.checked=true;
+  m.style.display='flex';
+}
+
+function closeExportModal(){
+  var m=document.getElementById('modalExport');if(m)m.style.display='none';
+}
+
+function doExport(){
+  var jsonCheck=document.getElementById('exportJsonCheck');
+  var pdfCheck=document.getElementById('exportPdfCheck');
+  var doJson=jsonCheck&&jsonCheck.checked;
+  var doPdf=pdfCheck&&pdfCheck.checked;
+  var es=lang==='es';
+  if(!doJson&&!doPdf){
+    alert(es?'Selecciona al menos un formato.':'Select at least one format.');
+    return;
+  }
+  closeExportModal();
+  if(doJson) exportData();
+  if(doPdf){
+    setTimeout(function(){
+      try{ exportPDF(); }
+      catch(e){ alert(es?'Error al generar PDF: '+e.message:'Error generating PDF: '+e.message); }
+    },150);
+  }
+}
+
+function exportPDF(){
+  var es=lang==='es';
+
+  // Gather all data
+  var total=monthlyIncome();
+  var nec=sumMonthly(state.necesidades);
+  var des=sumMonthly(state.deseos);
+  var aho=sumMonthly(state.ahorros);
+  var pas=sumMonthly(state.passive);
+  var sob=total-nec-des-aho;
+  var t50=total*.5,t30=total*.3,t20=total*.2;
+
+  // Score calculation
+  var score=100;
+  var necR=total>0?nec/total:0;
+  if(necR>.65)score-=30; else if(necR>.55)score-=15;
+  if(sob<0)score-=35; else if(sob<100)score-=15;
+  var ahoR=total>0?aho/total:0;
+  if(ahoR<.05)score-=20; else if(ahoR<.15)score-=8;
+  if(des>t30)score-=10;
+  score=Math.max(0,Math.min(100,score));
+
+  // Casa data
+  var precioEl=document.getElementById('c_precio');
+  var precio=precioEl?Number(precioEl.value)||0:0;
+  var engEl=document.getElementById('c_enganche');
+  var engPct=engEl?Number(engEl.value)||0:0;
+  var tasaEl=document.getElementById('c_tasa');
+  var tasa=tasaEl?Number(tasaEl.value)||6.8:6.8;
+  var plazo=document.querySelector('.plazo-btn.active');
+  var anios=plazo?Number(plazo.dataset.years||30):30;
+  var enganche=precio*engPct/100;
+  var prestamo=precio-enganche;
+  var pi=casaCalcPI(prestamo,tasa,anios);
+  var pitiEl=document.getElementById('c_piti');
+  var pitiText=pitiEl?pitiEl.textContent:'$0';
+  var pitiNum=Number(pitiText.replace(/[^0-9.]/g,''))||0;
+
+  var taxEl=document.getElementById('c_tax');
+  var taxRaw=taxEl?Number(taxEl.value)||0:0;
+  var taxMes=taxRaw<100?(precio*taxRaw/100)/12:taxRaw/12;
+  var segEl=document.getElementById('c_seguro');
+  var segRaw=segEl?Number(segEl.value)||0:0;
+  var segMes=segRaw<100?(precio*segRaw/100)/12:segRaw/12;
+  var mantEl=document.getElementById('c_mant');
+  var mantRaw=mantEl?Number(mantEl.value)||0:0;
+  var mantMes=mantRaw<100?(precio*mantRaw/100)/12:mantRaw/12;
+  var costoReal=pitiNum+mantMes;
+
+  // Date
+  var now=new Date();
+  var dateStr=now.toLocaleDateString(es?'es-MX':'en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // Colors
+  var blue='#007AFF', purple='#5856D6', green='#34C759', orange='#FF9500', red='#FF3B30', gray='#8e8e93';
+  var scoreColor=score>=80?green:score>=60?orange:red;
+
+  // Init jsPDF - UMD exposes window.jspdf.jsPDF
+  var jsPDFLib=null;
+  if(window.jspdf&&window.jspdf.jsPDF){
+    jsPDFLib=window.jspdf.jsPDF;
+  } else {
+    alert(es?'Error: PDF no disponible. Verifica tu conexión a internet.':'Error: PDF not available. Check your internet connection.');
+    return;
+  }
+  var doc=new jsPDFLib({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,H=297,M=16,CW=W-M*2;
+
+  // ===================== PAGE 1 =====================
+  // Header gradient bar
+  doc.setFillColor(0,122,255);
+  doc.rect(0,0,W,28,'F');
+
+  // Logo area
+  doc.setFillColor(255,255,255,0.2);
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(M,6,16,16,3,3,'F');
+  doc.setTextColor(0,122,255);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text('FH',M+8,16.5,{align:'center'});
+
+  // App name
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(16);doc.setFont('helvetica','bold');
+  doc.text('FinHome',M+20,13);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(es?'Reporte Financiero - 2026':'Financial Report - 2026',M+20,19);
+
+  // Date + email
+  doc.setFontSize(8);
+  doc.text(dateStr,W-M,13,{align:'right'});
+  doc.text(currentEmail||'',W-M,19,{align:'right'});
+
+  var y=36;
+
+  // Score section
+  doc.setDrawColor(scoreColor);doc.setFillColor(255,255,255);
+  doc.roundedRect(M,y,CW,22,4,4,'FD');
+  // Score circle
+  doc.setDrawColor(scoreColor);doc.setLineWidth(2.5);
+  doc.circle(M+14,y+11,9,'S');
+  doc.setTextColor(scoreColor);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text(String(score),M+14,y+13,{align:'center'});
+  doc.setFontSize(5);doc.setFont('helvetica','normal');
+  doc.text('SCORE',M+14,y+17,{align:'center'});
+
+  // Score title
+  var scoreTitle=score>=80?(es?'Finanzas saludables':'Healthy finances'):score>=60?(es?'Presupuesto ajustado':'Tight budget'):(es?'Atención requerida':'Attention needed');
+  doc.setTextColor(scoreColor);doc.setFontSize(12);doc.setFont('helvetica','bold');
+  doc.text(scoreTitle,M+26,y+9);
+  var scoreDesc=score>=80?(es?'El plan es viable. Comprar la casa es una buena decisión.':'The plan is viable. Buying the home is a good decision.'):score>=60?(es?'Viable pero con margen ajustado. Considera liberar deudas primero.':'Viable but tight. Consider paying off debts first.'):(es?'Revisa tu presupuesto antes de comprar.':'Review your budget before buying.');
+  doc.setTextColor(100,100,100);doc.setFontSize(8);doc.setFont('helvetica','normal');
+  var descLines=doc.splitTextToSize(scoreDesc,CW-30);
+  doc.text(descLines,M+26,y+15);
+  y+=30;
+
+  // Section: Overview
+  doc.setFillColor(240,244,255);doc.rect(M,y,CW,6,'F');
+  doc.setTextColor(0,122,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text(es?'PANORAMA GENERAL':'OVERVIEW',M+2,y+4);
+  y+=9;
+
+  // KPI grid 3x2
+  var kpis=[
+    {l:es?'Ingreso mensual':'Monthly income',v:fmt(total),c:blue},
+    {l:es?'Total gastos':'Total expenses',v:fmt(nec+des+aho),c:'#1c1c1e'},
+    {l:es?'Sobrante/mes':'Surplus/month',v:fmt(sob),c:sob>=0?green:red},
+    {l:es?'Ahorrando/mes':'Saving/month',v:fmt(aho),c:purple},
+    {l:es?'Casa + servicios':'Home + utilities',v:fmt(nec),c:'#1c1c1e'},
+    {l:es?'Ingresos pasivos':'Passive income',v:fmt(pas),c:green},
+  ];
+  var kW=(CW-6)/3,kH=16;
+  kpis.forEach(function(k,i){
+    var col=i%3,row=Math.floor(i/3);
+    var kx=M+col*(kW+3),ky=y+row*(kH+3);
+    doc.setFillColor(248,249,255);doc.roundedRect(kx,ky,kW,kH,2,2,'F');
+    doc.setTextColor(150,150,150);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    doc.text(k.l,kx+3,ky+5);
+    var rgb=k.c==='#1c1c1e'?[28,28,30]:k.c===blue?[0,122,255]:k.c===green?[52,199,89]:k.c===purple?[88,86,214]:k.c===red?[255,59,48]:[255,149,0];
+    doc.setTextColor(rgb[0],rgb[1],rgb[2]);doc.setFontSize(11);doc.setFont('helvetica','bold');
+    doc.text(k.v,kx+3,ky+12);
+  });
+  y+=2*(kH+3)+4;
+
+  // Section: 50/30/20
+  doc.setFillColor(240,244,255);doc.rect(M,y,CW,6,'F');
+  doc.setTextColor(0,122,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text(es?'MÉTODO 50/30/20':'50/30/20 METHOD',M+2,y+4);
+  y+=10;
+
+  var methods=[
+    {n:es?'Necesidades (50%)':'Needs (50%)',real:nec,target:t50,c:[0,122,255]},
+    {n:es?'Deseos (30%)':'Wants (30%)',real:des,target:t30,c:[88,86,214]},
+    {n:es?'Ahorros (20%)':'Savings (20%)',real:aho,target:t20,c:[52,199,89]},
+  ];
+  methods.forEach(function(m){
+    doc.setTextColor(m.c[0],m.c[1],m.c[2]);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(m.n,M,y);
+    doc.setTextColor(100,100,100);doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text(fmt(m.real)+' / '+fmt(m.target),W-M,y,{align:'right'});
+    // Bar bg
+    doc.setFillColor(235,235,240);doc.roundedRect(M,y+2,CW,4,1,1,'F');
+    // Bar fill
+    var pct=m.target>0?Math.min(m.real/m.target,1):0;
+    if(pct>0){doc.setFillColor(m.c[0],m.c[1],m.c[2]);doc.roundedRect(M,y+2,CW*pct,4,1,1,'F');}
+    var pctInc=total>0?((m.real/total)*100).toFixed(1)+'%':'0%';
+    doc.setTextColor(150,150,150);doc.setFontSize(6);
+    doc.text(pctInc+' '+(es?'del ingreso':'of income'),M,y+10);
+    y+=14;
+  });
+  y+=2;
+
+  // Section: Tips
+  doc.setFillColor(240,244,255);doc.rect(M,y,CW,6,'F');
+  doc.setTextColor(0,122,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text(es?'TIPS PERSONALIZADOS':'PERSONALIZED TIPS',M+2,y+4);
+  y+=10;
+
+  var tips=[];
+  var hipotecaItem=state.necesidades.find(function(x){return isLockedItem(x.name,x)&&(x.name.toLowerCase().indexOf('hipoteca')>=0||x.name.toLowerCase().indexOf('mortgage')>=0);});
+  var hipMonto=hipotecaItem?Number(hipotecaItem.amount||0):0;
+  var hipPct=total>0?((hipMonto/total)*100).toFixed(1):0;
+  if(hipMonto>0) tips.push({t:es?'ok':'ok',m:es?'Tu hipoteca representa el '+hipPct+'% del ingreso - '+(hipMonto/total<=.32?'rango saludable.':'considera reducir gastos.'):'Your mortgage is '+hipPct+'% of income - '+(hipMonto/total<=.32?'healthy range.':'consider reducing expenses.')});
+  var ahoPct=total>0?((aho/total)*100).toFixed(1):0;
+  tips.push({t:ahoR>=.2?'ok':'warn',m:es?'Ahorras el '+ahoPct+'%. '+(ahoR>=.2?'Excelente! Meta lograda.':'Intenta llegar al 20%.'):'You save '+ahoPct+'%. '+(ahoR>=.2?'Excellent! Goal reached.':'Try to reach 20%.')});
+  tips.push({t:'info',m:es?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des)*6)+').'});
+  if(des<=t30) tips.push({t:'ok',m:es?'Tus deseos están dentro del 30% - buen control.':'Your wants are within 30% - good control.'});
+
+  tips.slice(0,4).forEach(function(tip){
+    var bc=tip.t==='ok'?[240,255,244]:tip.t==='warn'?[255,248,230]:[240,244,255];
+    var tc=tip.t==='ok'?[52,199,89]:tip.t==='warn'?[255,149,0]:[0,122,255];
+    var th=8;
+    var lines=doc.splitTextToSize(tip.m,CW-10);
+    var bh=Math.max(th,lines.length*4+4);
+    doc.setFillColor(bc[0],bc[1],bc[2]);doc.roundedRect(M,y,CW,bh,2,2,'F');
+    doc.setTextColor(tc[0],tc[1],tc[2]);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(tip.t==='ok'?'✓':tip.t==='warn'?'★':'ℹ',M+3,y+5);
+    doc.setTextColor(60,60,60);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    doc.text(lines,M+9,y+5);
+    y+=bh+3;
+  });
+
+  // Footer page 1
+  doc.setFillColor(248,249,255);doc.rect(0,H-10,W,10,'F');
+  doc.setTextColor(150,150,150);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+  doc.text('FinHome · fin-home-psi.vercel.app',M,H-4);
+  doc.text(es?'Página 1 de 2':'Page 1 of 2',W/2,H-4,{align:'center'});
+  doc.text(dateStr,W-M,H-4,{align:'right'});
+
+  // ===================== PAGE 2 =====================
+  doc.addPage();
+  y=0;
+
+  // Header
+  doc.setFillColor(0,122,255);doc.rect(0,0,W,28,'F');
+  doc.setFillColor(255,255,255);doc.roundedRect(M,6,16,16,3,3,'F');
+  doc.setTextColor(0,122,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
+  doc.text('FH',M+8,16.5,{align:'center'});
+  doc.setTextColor(255,255,255);doc.setFontSize(16);doc.setFont('helvetica','bold');
+  doc.text('FinHome',M+20,13);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(es?'Análisis de Compra de Casa':'Home Purchase Analysis',M+20,19);
+  doc.text(dateStr,W-M,13,{align:'right'});
+  y=36;
+
+  if(precio>0){
+    // PITI Hero box
+    doc.setFillColor(0,122,255);doc.roundedRect(M,y,CW,22,4,4,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text(es?'PAGO MENSUAL TOTAL (PITI)':'TOTAL MONTHLY PAYMENT (PITI)',W/2,y+6,{align:'center'});
+    doc.setFontSize(22);doc.setFont('helvetica','bold');
+    doc.text(fmt(pitiNum),W/2,y+16,{align:'center'});
+    doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    var pitiSub='P+I '+fmt(Math.round(pi))+' · Tax '+fmt(Math.round(taxMes))+' · Seg '+fmt(Math.round(segMes));
+    doc.text(pitiSub,W/2,y+21,{align:'center'});
+    y+=28;
+
+    // Two columns: Financiamiento + Pagos
+    var col1W=(CW-6)/2,col2X=M+col1W+6;
+
+    // Col 1 - Financing
+    doc.setFillColor(240,244,255);doc.rect(M,y,col1W,6,'F');
+    doc.setTextColor(0,122,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+    doc.text(es?'FINANCIAMIENTO':'FINANCING',M+2,y+4);
+    y+=8;
+
+    var finRows=[
+      [es?'Precio de la casa':'Home price', fmt(precio)],
+      [es?'Enganche ('+engPct+'%)':'Down payment ('+engPct+'%)', fmt(Math.round(enganche))],
+      [es?'Préstamo':'Loan amount', fmt(Math.round(prestamo))],
+      [es?'Tasa de interés':'Interest rate', tasa+'% APR'],
+      [es?'Plazo':'Term', anios+(es?' años':' years')],
+    ];
+    finRows.forEach(function(r,i){
+      if(i%2===0)doc.setFillColor(250,250,252); else doc.setFillColor(255,255,255);
+      doc.rect(M,y,col1W,6,'F');
+      doc.setTextColor(100,100,100);doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text(r[0],M+2,y+4);
+      doc.setTextColor(28,28,30);doc.setFont('helvetica','bold');
+      doc.text(r[1],M+col1W-2,y+4,{align:'right'});
+      y+=6;
+    });
+
+    // Col 2 - Monthly payments (reset y)
+    var y2=y-finRows.length*6-8;
+    doc.setFillColor(240,244,255);doc.rect(col2X,y2,col1W,6,'F');
+    doc.setTextColor(0,122,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+    doc.text(es?'PAGOS MENSUALES':'MONTHLY PAYMENTS',col2X+2,y2+4);
+    y2+=8;
+
+    var payRows=[
+      [es?'Principal + Interés':'P+I', fmt(Math.round(pi)), blue],
+      ['Property Tax', fmt(Math.round(taxMes)), '#555'],
+      [es?'Seguro de casa':'Home insurance', fmt(Math.round(segMes)), '#555'],
+      ['PMI', fmt(Math.round(pitiNum-Math.round(pi)-Math.round(taxMes)-Math.round(segMes))), '#555'],
+      [es?'Mantenimiento':'Maintenance', fmt(Math.round(mantMes)), '#555'],
+      [es?'PITI total':'PITI total', fmt(pitiNum), blue],
+      [es?'Costo real/mes':'Real cost/month', fmt(Math.round(costoReal)), orange],
+    ];
+    payRows.forEach(function(r,i){
+      if(i%2===0)doc.setFillColor(250,250,252); else doc.setFillColor(255,255,255);
+      doc.rect(col2X,y2,col1W,6,'F');
+      doc.setTextColor(100,100,100);doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text(r[0],col2X+2,y2+4);
+      var rgb=r[2]===blue?[0,122,255]:r[2]===orange?[255,149,0]:[28,28,30];
+      doc.setTextColor(rgb[0],rgb[1],rgb[2]);doc.setFont('helvetica','bold');
+      doc.text(r[1],col2X+col1W-2,y2+4,{align:'right'});
+      y2+=6;
+    });
+    y=Math.max(y,y2)+6;
+
+    // Total cost
+    doc.setFillColor(240,244,255);doc.rect(M,y,CW,6,'F');
+    doc.setTextColor(0,122,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+    doc.text(es?'COSTO TOTAL A '+anios+' AÑOS':'TOTAL COST OVER '+anios+' YEARS',M+2,y+4);
+    y+=8;
+
+    var totalPagado=pi*anios*12;
+    var totalInt=totalPagado-prestamo;
+    var costRows=[
+      [es?'Total de pagos (P+I)':'Total payments (P+I)', fmt(Math.round(totalPagado)), '#1c1c1e'],
+      [es?'De los cuales, intereses':'Of which, interest', fmt(Math.round(totalInt)), red],
+      [es?'Enganche pagado hoy':'Down payment today', fmt(Math.round(enganche)), '#1c1c1e'],
+    ];
+    costRows.forEach(function(r,i){
+      if(i%2===0)doc.setFillColor(250,250,252); else doc.setFillColor(255,255,255);
+      doc.rect(M,y,CW,6,'F');
+      doc.setTextColor(100,100,100);doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text(r[0],M+2,y+4);
+      var rgb=r[2]===red?[255,59,48]:[28,28,30];
+      doc.setTextColor(rgb[0],rgb[1],rgb[2]);doc.setFont('helvetica','bold');
+      doc.text(r[1],W-M-2,y+4,{align:'right'});
+      y+=6;
+    });
+    y+=6;
+
+    // Diagnosis
+    doc.setFillColor(240,244,255);doc.rect(M,y,CW,6,'F');
+    doc.setTextColor(0,122,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+    doc.text(es?'DIAGNÓSTICO':'DIAGNOSIS',M+2,y+4);
+    y+=10;
+
+    var hipPctNum=total>0?(pitiNum/total)*100:0;
+    var diags=[];
+    if(hipPctNum<=28) diags.push({t:'ok',m:es?'Carga hipotecaria saludable ('+hipPctNum.toFixed(1)+'%). Cumples la regla del 28%.':'Healthy mortgage load ('+hipPctNum.toFixed(1)+'%). You meet the 28% rule.'});
+    else if(hipPctNum<=36) diags.push({t:'warn',m:es?'Carga hipotecaria elevada ('+hipPctNum.toFixed(1)+'%). Entre 28-36%, manejable pero ajustado.':'High mortgage load ('+hipPctNum.toFixed(1)+'%). Between 28-36%, manageable but tight.'});
+    else diags.push({t:'danger',m:es?'Carga hipotecaria muy elevada ('+hipPctNum.toFixed(1)+'%). Supera el 36% recomendado.':'Very high mortgage load ('+hipPctNum.toFixed(1)+'%). Exceeds the recommended 36%.'});
+    if(engPct<10) diags.push({t:'warn',m:es?'Enganche bajo ('+engPct+'%). PMI elevado y tasa desfavorable. Evalúa programas FHA.':'Low down payment ('+engPct+'%). High PMI and unfavorable rate. Consider FHA programs.'});
+    else if(engPct<20) diags.push({t:'warn',m:es?'Enganche del '+engPct+'%. Pagarás PMI hasta alcanzar el 20% de equity.':'Down payment of '+engPct+'%. You will pay PMI until reaching 20% equity.'});
+    else diags.push({t:'ok',m:es?'Enganche del '+engPct+'%. Sin PMI, mejor tasa.':'Down payment of '+engPct+'%. No PMI, better rate.'});
+    diags.push({t:'info',m:es?'Tasa en rango normal ('+tasa+'%). Promedio del mercado 2026. Compara con al menos 3 lenders.':'Rate in normal range ('+tasa+'%). 2026 market average. Compare with at least 3 lenders.'});
+    diags.push({t:'info',m:es?'Costo real mensual: '+fmt(Math.round(costoReal))+'. Incluye hipoteca, impuestos, seguro y mantenimiento.':'Real monthly cost: '+fmt(Math.round(costoReal))+'. Includes mortgage, taxes, insurance and maintenance.'});
+
+    diags.forEach(function(d){
+      var bc=d.t==='ok'?[240,255,244]:d.t==='warn'?[255,248,230]:d.t==='danger'?[255,240,240]:[240,244,255];
+      var tc=d.t==='ok'?[52,199,89]:d.t==='warn'?[255,149,0]:d.t==='danger'?[255,59,48]:[0,122,255];
+      var lines=doc.splitTextToSize(d.m,CW-10);
+      var bh=Math.max(9,lines.length*4+5);
+      if(y+bh>H-20){doc.addPage();y=20;}
+      doc.setFillColor(bc[0],bc[1],bc[2]);doc.roundedRect(M,y,CW,bh,2,2,'F');
+      doc.setTextColor(tc[0],tc[1],tc[2]);doc.setFontSize(8);doc.setFont('helvetica','bold');
+      doc.text(d.t==='ok'?'✓':'★',M+3,y+6);
+      doc.setTextColor(50,50,50);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+      doc.text(lines,M+9,y+6);
+      y+=bh+3;
+    });
+
+    // Recommendation
+    y+=2;
+    var recOk=score>=75&&hipPctNum<=36;
+    var recColor=recOk?[240,255,244]:[255,248,230];
+    var recBorder=recOk?[52,199,89]:[255,149,0];
+    var recMsg=recOk?(es?'La compra es viable. El plan financiero soporta la hipoteca.':'The purchase is viable. The financial plan supports the mortgage.'):(es?'La compra es posible pero con margen ajustado. Considera mejorar el enganche o liberar deudas primero.':'The purchase is possible but with a tight margin. Consider improving the down payment or paying off debts first.');
+    var recLines=doc.splitTextToSize(recMsg,CW-6);
+    var recH=Math.max(14,recLines.length*4+8);
+    if(y+recH>H-20){doc.addPage();y=20;}
+    doc.setFillColor(recColor[0],recColor[1],recColor[2]);
+    doc.setDrawColor(recBorder[0],recBorder[1],recBorder[2]);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(M,y,CW,recH,3,3,'FD');
+    doc.setTextColor(60,60,60);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(es?'Recomendación final':'Final recommendation',M+4,y+6);
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    doc.text(recLines,M+4,y+11);
+    y+=recH+4;
+
+    // Notice
+    var noticeMsg=es?'Aviso: Este reporte es una estimación. Los valores reales pueden variar según lender, historial crediticio y condiciones del mercado. No constituye asesoramiento financiero profesional.':'Notice: This report is an estimate. Actual values may vary by lender, credit history and market conditions. Does not constitute professional financial advice.';
+    var noticeLines=doc.splitTextToSize(noticeMsg,CW-4);
+    doc.setFillColor(248,249,255);doc.roundedRect(M,y,CW,noticeLines.length*4+6,2,2,'F');
+    doc.setTextColor(150,150,150);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    doc.text(noticeLines,M+2,y+5);
+  } else {
+    doc.setTextColor(150,150,150);doc.setFontSize(11);doc.setFont('helvetica','normal');
+    doc.text(es?'No hay datos de casa calculados todavía.':'No home data calculated yet.',W/2,H/2,{align:'center'});
+    doc.setFontSize(9);
+    doc.text(es?'Ve a la pestaña Casa y calcula tu hipoteca primero.':'Go to the Home tab and calculate your mortgage first.',W/2,H/2+10,{align:'center'});
+  }
+
+  // Footer page 2
+  doc.setFillColor(248,249,255);doc.rect(0,H-10,W,10,'F');
+  doc.setTextColor(150,150,150);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+  doc.text('FinHome · fin-home-psi.vercel.app',M,H-4);
+  doc.text(es?'Página 2 de 2':'Page 2 of 2',W/2,H-4,{align:'center'});
+  doc.text(dateStr,W-M,H-4,{align:'right'});
+
+  // Save
+  var filename='finhome-reporte-'+now.toISOString().slice(0,10)+'.pdf';
+  doc.save(filename);
 }
 
 function importData(event){
@@ -1372,54 +1856,84 @@ function renderIncomeCards(){
   });
   if(state.members.length===0){
     var esI=lang==='es';
-    el.innerHTML='<div class="alert info"><div class="alert-icon">[P]</div><div>'+(esI?'Toca <strong>Integrantes</strong> en el header para agregar personas al hogar.':'Tap <strong>Members</strong> in the header to add people to your household.')+'</div></div>';
+    el.innerHTML='<div class="alert info"><div class="alert-icon">'+getSvgIcon('[P]',18)+'</div><div>'+(esI?'Toca <strong>Integrantes</strong> en el header para agregar personas al hogar.':'Tap <strong>Members</strong> in the header to add people to your household.')+'</div></div>';
   }
   // Update member count badge
   var cnt=document.getElementById('memberCount');if(cnt)cnt.textContent=state.members.length;
 }
 
 function updatePersonSelects(){
+  var es=lang==='es';
   ['necesidades','deseos','ahorros'].forEach(function(cat){
     var sel=document.getElementById('person-'+cat);if(!sel)return;
     var prev=sel.value;
-    sel.innerHTML='<option value="">Todos</option>';
+    sel.innerHTML='<option value="">'+(es?'Todos':'Everyone')+'</option>';
     state.members.forEach(function(m){
-      var opt=document.createElement('option');opt.value=m.name;opt.textContent=m.name;sel.appendChild(opt);
+      var opt=document.createElement('option');
+      opt.value=m.name;
+      opt.textContent=m.name;
+      sel.appendChild(opt);
     });
-    sel.value=prev;
+    // Restore previous selection
+    if(prev) sel.value=prev;
   });
 }
 
 // ---- EXPENSE LISTS ----
+function isLockedItem(name){
+  var n=(name||'').toLowerCase();
+  return n==='hipoteca'||n==='mortgage'||n==='servicios'||n==='utilities'||
+         n==='property tax'||n==='impuesto predial'||n==='services';
+}
+function isLockedItem(name, item){
+  if(item&&item.fixed===true) return true;
+  var n=(name||'').toLowerCase();
+  return n==='hipoteca'||n==='mortgage'||n==='servicios'||n==='utilities'||
+         n==='services'||n==='property tax'||n==='impuesto predial';
+}
 function renderList(cat){
   var arr=state[cat];
   var el=document.getElementById('list-'+cat);if(!el)return;
+  var es=lang==='es';
   el.innerHTML='';
   arr.forEach(function(item){
     var isTemp=item.tag==='temp';
+    var locked=isLockedItem(item.name, item);
     var months=Number(item.months||3);
     var total=Number(item.amount||0);
     var perMonth=isTemp?(months>0?total/months:0):total;
     var perWeek=perMonth/4.33;
-    var tagHtml=isTemp?'<span class="row-tag temp">deuda</span>':item.tag==='savings'?'<span class="row-tag savings">inv.</span>':'';
+    var tagHtml=isTemp?'<span class="row-tag temp">'+(es?'deuda':'debt')+'</span>':item.tag==='savings'?'<span class="row-tag savings">inv.</span>':'';
     var personHtml=item.person?'<span class="row-person">'+item.person+'</span>':'';
 
-    var wrap=document.createElement('div');wrap.className='debt-wrap';
+    var hint='';
+    var nl=(item.name||'').toLowerCase();
+    if(nl==='hipoteca'||nl==='mortgage') hint=es?'Pago mensual de hipoteca':'Monthly mortgage payment';
+    else if(nl==='servicios'||nl==='utilities'||nl==='services') hint=es?'Luz, agua, internet, gas':'Electricity, water, internet, gas';
+    else if(nl==='property tax'||nl==='impuesto predial') hint=es?'Impuesto predial mensual':'Monthly property tax';
+    var hintHtml=hint?'<div class="row-hint">'+hint+'</div>':'';
 
+    var wrap=document.createElement('div');wrap.className='debt-wrap';
     var row=document.createElement('div');row.className='row';row.style.borderBottom='none';
-    var amtLabel=isTemp?'Saldo total':'Monto';
-    row.innerHTML='<span class="row-name">'+item.name+'</span>'+personHtml+tagHtml+
-      '<input type="number" class="row-input" value="'+total+'" data-cat="'+cat+'" data-id="'+item.id+'" placeholder="'+amtLabel+'">'+
-      '<button class="btn-del" data-cat="'+cat+'" data-id="'+item.id+'">x</button>';
+    var amtLabel=isTemp?(es?'Saldo total':'Total balance'):(es?'Monto':'Amount');
+
+    var delBtn=locked
+      ? '<span style="width:28px;display:inline-block;"></span>'
+      : '<button class="btn-del" data-cat="'+cat+'" data-id="'+item.id+'">x</button>';
+
+    row.innerHTML='<div style="flex:1;min-width:0;"><span class="row-name">'+item.name+'</span>'+personHtml+tagHtml+hintHtml+'</div>'+
+      '<input type="number" class="row-input" value="'+total+'" data-cat="'+cat+'" data-id="'+item.id+'" placeholder="'+amtLabel+'"'+(locked?' style="background:#f8f8f8;"':'')+'>'+
+      delBtn;
     wrap.appendChild(row);
 
     if(isTemp){
       var sub=document.createElement('div');sub.className='debt-breakdown';
+      var calIcon=getSvgIcon('[D]',14);
       sub.innerHTML=
-        '<span class="debt-label">Pago:</span>'+
-        '<span class="debt-chip">'+fmt(perMonth)+'/mes</span>'+
-        '<span class="debt-chip sec">'+fmtD(perWeek)+'/sem</span>'+
-        '<button class="debt-months-btn" data-openmonths="'+item.id+'" data-cat="'+cat+'">[D] '+months+' meses</button>';
+        '<span class="debt-label">'+(es?'Pago:':'Payment:')+'</span>'+
+        '<span class="debt-chip">'+fmt(perMonth)+(es?'/mes':'/mo')+'</span>'+
+        '<span class="debt-chip sec">'+fmtD(perWeek)+(es?'/sem':'/wk')+'</span>'+
+        '<button class="debt-months-btn" data-openmonths="'+item.id+'" data-cat="'+cat+'">'+calIcon+' '+months+(es?' meses':' months')+'</button>';
       wrap.appendChild(sub);
     }
     el.appendChild(wrap);
@@ -1500,6 +2014,7 @@ function recalculate(skipLists){
     ['necesidades','deseos','ahorros'].forEach(function(c){var el=document.getElementById('total-'+c);if(el)el.textContent=fmt(sumMonthly(state[c]));});
     var tp=document.getElementById('total-pasivos');if(tp)tp.textContent=fmt(pas);
   }
+  updatePersonSelects();
 
   renderKPIs(total,nec,des,aho,sob,pas);
   renderMethod(total,nec,des,aho,t50,t30,t20);
@@ -2182,29 +2697,138 @@ function sendToDashboard(){
   var pitiEl=document.getElementById('c_piti');
   var pitiText=pitiEl?pitiEl.textContent:'$0';
   var pitiNum=Number(pitiText.replace(/[^0-9.]/g,''))||0;
-  if(pitiNum===0){alert(es?'Calcula el análisis primero.':'Calculate the analysis first.');return;}
-  // Find existing hipoteca in needs or create new
-  var hipIdx=state.necesidades.findIndex(function(x){return x.name&&x.name.toLowerCase().indexOf('hipoteca')>=0;});
+  if(pitiNum===0){alert(es?'Calcula el analisis primero.':'Calculate the analysis first.');return;}
+
+  var taxRaw=Number((document.getElementById('c_tax')||{value:0}).value)||0;
+  var precioVal=Number((document.getElementById('c_precio')||{value:0}).value)||0;
+  var taxMes=taxRaw<100?(precioVal*taxRaw/100)/12:taxRaw/12;
+
   var hipName=es?'Hipoteca':'Mortgage';
-  if(hipIdx>=0){
-    state.necesidades[hipIdx].amount=pitiNum;
-    state.necesidades[hipIdx].name=hipName;
-  } else {
-    state.necesidades.push({id:Date.now(),name:hipName,amount:pitiNum,tag:'fijo',person:'',months:0});
-  }
+  var taxName=es?'Impuesto predial':'Property Tax';
+  var svcName=es?'Servicios':'Utilities';
+
+  // Update fixed items amounts
+  state.necesidades.forEach(function(x){
+    var nl=(x.name||'').toLowerCase();
+    if(nl==='hipoteca'||nl==='mortgage'){x.amount=pitiNum;x.name=hipName;x.fixed=true;}
+    if(nl==='impuesto predial'||nl==='property tax'){if(taxMes>0){x.amount=taxMes;x.name=taxName;}x.fixed=true;}
+    if(nl==='servicios'||nl==='utilities'){x.name=svcName;x.fixed=true;}
+  });
+
   saveData(currentEmail);
   recalculate(false);
-  alert(es?'Hipoteca de '+pitiText+' enviada al dashboard en Necesidades.':'Mortgage of '+pitiText+' sent to dashboard in Needs.');
+  var msg=es
+    ?'Dashboard actualizado: Hipoteca '+pitiText+(taxMes>0?' + Impuesto predial $'+Math.round(taxMes):'')
+    :'Dashboard updated: Mortgage '+pitiText+(taxMes>0?' + Property Tax $'+Math.round(taxMes):'');
+  alert(msg);
   showTab('resumen',document.querySelector('.tab-btn'));
+}
+
+// ---- HELP SYSTEM ----
+var helpTexts = {
+  // Expense sections
+  'nec': {
+    es: {title:'Necesidades (50%)', body:'Tus gastos esenciales del mes. Meta: no superar el 50% del ingreso. Hipoteca, Servicios e Impuesto predial son fijos y se actualizan desde la pestaña Casa.'},
+    en: {title:'Needs (50%)', body:'Your essential monthly expenses. Target: do not exceed 50% of income. Mortgage, Utilities and Property Tax are fixed and update automatically from the Home tab.'}
+  },
+  'des': {
+    es: {title:'Deseos (30%)', body:'Gastos personales y variables: salidas, suscripciones, entretenimiento, hobbies. Meta: máximo 30% del ingreso.'},
+    en: {title:'Wants (30%)', body:'Personal and variable expenses: dining out, subscriptions, entertainment, hobbies. Target: maximum 30% of income.'}
+  },
+  'aho': {
+    es: {title:'Ahorros & Inversiones (20%)', body:'Aportaciones mensuales a inversiones y ahorros. Meta: al menos 20% del ingreso. Incluye fondos de emergencia, retiro e inversiones.'},
+    en: {title:'Savings & Investments (20%)', body:'Monthly contributions to savings and investments. Target: at least 20% of income. Includes emergency fund, retirement and investments.'}
+  },
+  'passive': {
+    es: {title:'Ingresos pasivos', body:'Ingresos que recibes sin trabajar activamente: intereses de ahorros, renta, dividendos. Se suman al ingreso total mensual.'},
+    en: {title:'Passive income', body:'Income you receive without actively working: savings interest, rent, dividends. Added to your total monthly income.'}
+  },
+  // Fixed items
+  'mortgage': {
+    es: {title:'Hipoteca', body:'Pago mensual total de tu hipoteca (PITI: Principal, Interés, Impuestos, Seguro). Se actualiza automáticamente al presionar "Pasar al dashboard" en la pestaña Casa.'},
+    en: {title:'Mortgage', body:'Total monthly mortgage payment (PITI: Principal, Interest, Taxes, Insurance). Updates automatically when you press "Send to dashboard" in the Home tab.'}
+  },
+  'utilities': {
+    es: {title:'Servicios', body:'Gastos mensuales de servicios del hogar: electricidad, agua, internet, gas. Ingresa el total combinado de todos los servicios.'},
+    en: {title:'Utilities', body:'Monthly household utility expenses: electricity, water, internet, gas. Enter the combined total of all utilities.'}
+  },
+  'tax': {
+    es: {title:'Impuesto predial', body:'Impuesto predial mensual de tu propiedad. Se calcula automáticamente desde la pestaña Casa o puedes ingresarlo manualmente.'},
+    en: {title:'Property Tax', body:'Monthly property tax for your home. Calculated automatically from the Home tab or you can enter it manually.'}
+  },
+  // Casa fields
+  'c_precio': {
+    es: {title:'Precio de la casa', body:'El precio de lista de la propiedad que quieres analizar. Puedes cambiar este valor para comparar diferentes propiedades.'},
+    en: {title:'Home price', body:'The list price of the property you want to analyze. You can change this value to compare different properties.'}
+  },
+  'c_enganche': {
+    es: {title:'Enganche', body:'Porcentaje del precio que pagas de entrada. Con menos del 20% pagarás PMI (seguro hipotecario). Con 20%+ evitas el PMI y obtienes mejor tasa.'},
+    en: {title:'Down payment', body:'Percentage of the price you pay upfront. With less than 20% you will pay PMI (mortgage insurance). With 20%+ you avoid PMI and get a better rate.'}
+  },
+  'c_tasa': {
+    es: {title:'Tasa de interés', body:'APR anual de tu préstamo. Búscala en la pestaña Buscar o pide tu tasa pre-aprobada al banco. Varía según tu score crediticio y el lender.'},
+    en: {title:'Interest rate', body:'Annual APR for your loan. Find it in the Search tab or ask your bank for your pre-approved rate. Varies by credit score and lender.'}
+  },
+  'c_tax': {
+    es: {title:'Property Tax', body:'Impuesto predial anual de la propiedad. Puedes ingresar el porcentaje (ej: 2.62%) o el monto anual en $ (ej: 3500). La app detecta cuál es y calcula el monto mensual.'},
+    en: {title:'Property Tax', body:'Annual property tax for the home. You can enter the percentage (e.g. 2.62%) or the annual $ amount (e.g. 3500). The app detects which one and calculates the monthly amount.'}
+  },
+  'c_seguro': {
+    es: {title:'Seguro de casa', body:'Seguro del hogar anual. Promedio en Illinois: 0.8-1.2% del valor. Puedes ingresar el porcentaje o el monto anual en $.'},
+    en: {title:'Home insurance', body:'Annual homeowners insurance. Average in Illinois: 0.8-1.2% of value. You can enter the percentage or the annual $ amount.'}
+  },
+  'c_pmi': {
+    es: {title:'PMI - Seguro hipotecario', body:'Solo aplica si tu enganche es menor al 20%. El banco te cobra este seguro para protegerse. Promedio: 0.5% del préstamo. Se cancela automáticamente al llegar al 20% de equity.'},
+    en: {title:'PMI - Mortgage insurance', body:'Only applies if your down payment is less than 20%. The bank charges this insurance to protect itself. Average: 0.5% of loan. Cancels automatically when you reach 20% equity.'}
+  },
+  'c_mant': {
+    es: {title:'Mantenimiento estimado', body:'Costo anual estimado de mantenimiento de la casa. Regla estándar: 1% del valor de la propiedad por año. Cubre plomería, techo, electrodomésticos, etc.'},
+    en: {title:'Estimated maintenance', body:'Estimated annual home maintenance cost. Standard rule: 1% of property value per year. Covers plumbing, roof, appliances, etc.'}
+  },
+  'c_hoa': {
+    es: {title:'HOA', body:'Cuota mensual de la asociación de propietarios (si aplica). Búscala en la pestaña Buscar para tu zona específica. No todas las propiedades tienen HOA.'},
+    en: {title:'HOA', body:'Monthly homeowners association fee (if applicable). Find it in the Search tab for your specific area. Not all properties have HOA.'}
+  },
+  'c_extra': {
+    es: {title:'Pago extra mensual', body:'Monto adicional que pagas a tu hipoteca cada mes. Aunque sea pequeño, reduce significativamente el total de intereses y los años del préstamo.'},
+    en: {title:'Extra monthly payment', body:'Additional amount you pay on your mortgage each month. Even a small amount significantly reduces total interest and loan years.'}
+  },
+  'viabilidad': {
+    es: {title:'Viabilidad de la casa', body:'Análisis de si la compra es viable según tu ingreso actual. La regla del 28%: tu hipoteca no debe superar el 28% del ingreso bruto mensual.'},
+    en: {title:'Home viability', body:'Analysis of whether the purchase is viable based on your current income. The 28% rule: your mortgage should not exceed 28% of gross monthly income.'}
+  },
+  'tips': {
+    es: {title:'Tips personalizados', body:'Consejos basados en tu situación financiera actual. Se actualizan automáticamente cuando cambias tus ingresos o gastos.'},
+    en: {title:'Personalized tips', body:'Tips based on your current financial situation. They update automatically when you change your income or expenses.'}
+  }
+};
+
+function showHelp(key){
+  var es=lang==='es';
+  var data=helpTexts[key];
+  if(!data){return;}
+  var t=es?data.es:data.en;
+  var tt=document.getElementById('helpTooltip');
+  var ov=document.getElementById('helpOverlay');
+  var ti=document.getElementById('helpTitle');
+  var bo=document.getElementById('helpBody');
+  if(!tt||!ov||!ti||!bo){return;}
+  ti.textContent=t.title;
+  bo.textContent=t.body;
+  tt.style.display='block';
+  ov.style.display='block';
+}
+function closeHelp(){
+  var tt=document.getElementById('helpTooltip');
+  var ov=document.getElementById('helpOverlay');
+  if(tt)tt.style.display='none';
+  if(ov)ov.style.display='none';
 }
 
 // ---- INIT ----
 updateCasaLinks();
 checkSession();
 </script>
+
 </body>
 </html>
-      <div class="casa-panel" id="panel-creporte">
-        <div class="sec-label" data-lang="sec_reporte">Reporte completo de compra</div>
-        <div id="c_reporte"></div>
-      </div>
