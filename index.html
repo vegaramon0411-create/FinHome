@@ -1552,7 +1552,7 @@ function exportPDF(){
   if(hipMonto>0) tips.push({t:es?'ok':'ok',m:es?'Tu hipoteca representa el '+hipPct+'% del ingreso - '+(hipMonto/total<=.32?'rango saludable.':'considera reducir gastos.'):'Your mortgage is '+hipPct+'% of income - '+(hipMonto/total<=.32?'healthy range.':'consider reducing expenses.')});
   var ahoPct=total>0?((aho/total)*100).toFixed(1):0;
   tips.push({t:ahoR>=.2?'ok':'warn',m:es?'Ahorras el '+ahoPct+'%. '+(ahoR>=.2?'Excelente! Meta lograda.':'Intenta llegar al 20%.'):'You save '+ahoPct+'%. '+(ahoR>=.2?'Excellent! Goal reached.':'Try to reach 20%.')});
-  tips.push({t:'info',m:es?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des)*6)+').'});
+  tips.push({t:'info',m:es?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des+aho)*6)+').'});
   if(des<=t30) tips.push({t:'ok',m:es?'Tus deseos están dentro del 30% - buen control.':'Your wants are within 30% - good control.'});
 
   tips.slice(0,4).forEach(function(tip){
@@ -1568,6 +1568,32 @@ function exportPDF(){
     doc.text(lines,M+9,y+5);
     y+=bh+3;
   });
+
+  // Section: Sobrante al liquidar deudas temporales
+  var tempMonthlyPDF=getTempMonthly();
+  if(tempMonthlyPDF>0){
+    var sobAfterPDF=sob+tempMonthlyPDF;
+    var numMonthsPDF=document.getElementById('projMonths')?parseInt(document.getElementById('projMonths').value)||3:3;
+    if(y+28>H-20){doc.addPage();y=20;}
+    doc.setFillColor(240,255,244);doc.setDrawColor(52,199,89);doc.setLineWidth(0.5);
+    doc.roundedRect(M,y,CW,22,3,3,'FD');
+    doc.setTextColor(52,199,89);doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+    doc.text(es?'SOBRANTE AL LIQUIDAR DEUDAS TEMPORALES':'SURPLUS AFTER PAYING OFF TEMP DEBTS',M+4,y+5);
+    var col3w=CW/3;
+    doc.setTextColor(100,100,100);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    doc.text(es?'Hoy':'Today',M+4,y+10);
+    doc.setTextColor(28,28,30);doc.setFontSize(10);doc.setFont('helvetica','bold');
+    doc.text(fmt(sob),M+4,y+18);
+    doc.setTextColor(100,100,100);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    doc.text(es?'Se libera':'Released',M+col3w+4,y+10);
+    doc.setTextColor(52,199,89);doc.setFontSize(10);doc.setFont('helvetica','bold');
+    doc.text(fmt(tempMonthlyPDF),M+col3w+4,y+18);
+    doc.setTextColor(100,100,100);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    doc.text(es?'Al liquidar (~'+numMonthsPDF+' meses)':'At payoff (~'+numMonthsPDF+' mo)',W-M-2,y+10,{align:'right'});
+    doc.setTextColor(52,199,89);doc.setFontSize(10);doc.setFont('helvetica','bold');
+    doc.text(fmt(sobAfterPDF),W-M-2,y+18,{align:'right'});
+    y+=28;
+  }
 
   // Footer page 1
   doc.setFillColor(248,249,255);doc.rect(0,H-10,W,10,'F');
@@ -1755,7 +1781,11 @@ function exportPDF(){
 
   // Save
   var filename='finhome-reporte-'+now.toISOString().slice(0,10)+'.pdf';
-  doc.save(filename);
+  var pdfBlob=doc.output('blob');
+  var blobUrl=URL.createObjectURL(pdfBlob);
+  var dlLink=document.createElement('a');dlLink.href=blobUrl;dlLink.download=filename;
+  document.body.appendChild(dlLink);dlLink.click();
+  setTimeout(function(){document.body.removeChild(dlLink);URL.revokeObjectURL(blobUrl);},1000);
 }
 
 function importData(event){
@@ -2166,7 +2196,7 @@ function renderTips(total,nec,des,aho,sob,t50,t30,t20){
   var ahoLow=aho/Math.max(total,1)<.15;
   html+=tipEl(hipOver?'warn':'ok',hipOver?'[B]':'[ok]',esP?(hipOver?'Tu hipoteca representa el '+mortP+'% del ingreso - lo ideal es menos del 30%.':'Tu hipoteca representa el '+mortP+'% del ingreso - rango saludable.'):(hipOver?'Your mortgage is '+mortP+'% of income - ideally under 30%.':'Your mortgage is '+mortP+'% of income - healthy range.'));
   html+=tipEl(ahoLow?'warn':'ok',ahoLow?'[$]':'[^]',esP?(ahoLow?'Ahorras el '+ahoP+'%. Intenta llegar al 20%.':'Ahorras el '+ahoP+'% del ingreso! Buen ritmo.'):(ahoLow?'You are saving '+ahoP+'%. Try to reach 20%.':'You are saving '+ahoP+'% of income! Great pace.'));
-  if(tempTotal>0)html+=tipEl('info','[>]',esP?'Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu ahorro podría subir a '+fmt(aho+tempTotal)+'/mes ('+newAhoP+'%).':'By freeing '+fmt(tempTotal)+'/mo in '+months+' months, savings could rise to '+fmt(aho+tempTotal)+'/mo ('+newAhoP+'%).');
+  if(tempTotal>0)html+=tipEl('info','[>]',esP?'Al liberar '+fmt(tempTotal)+'/mes en '+months+' meses, tu sobrante podría subir a '+fmt(sob+tempTotal)+'/mes.':'By freeing '+fmt(tempTotal)+'/mo in '+months+' months, your surplus could rise to '+fmt(sob+tempTotal)+'/mo.');
   html+=tipEl('info','[s]',esP?'Fondo de emergencia ideal: 6 meses de gastos (~'+fmt((nec+des+aho)*6)+').':'Ideal emergency fund: 6 months of expenses (~'+fmt((nec+des+aho)*6)+').');
   html+=tipEl(des>t30?'warn':'ok',des>t30?'[T]':'[ok]',esP?(des>t30?'Tus deseos ('+fmt(des)+') superan la meta del 30% ('+fmt(t30)+').':'Tus deseos están dentro del 30% - buen control.'):(des>t30?'Your wants ('+fmt(des)+') exceed the 30% target ('+fmt(t30)+').':'Your wants are within 30% - good control.'));
   el.innerHTML=html;
