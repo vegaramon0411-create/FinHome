@@ -1149,7 +1149,7 @@ function getValidCodes(){try{var s=localStorage.getItem('fh_valid_codes');if(s)r
 
 function formatCode(el){var v=el.value.replace(/[^A-Z0-9a-z]/g,'').toUpperCase();el.value=[v.slice(0,4),v.slice(4,8),v.slice(8,12)].filter(Boolean).join('-');}
 
-var GAS_URL='https://script.google.com/macros/s/AKfycbzFCot66iPgkMHTd80fdfUKvpmxu2WN8yrs-mQjQjgZnIjO2Dpmg0mZmLjUjlvFX-9J/exec';
+var GAS_URL='https://script.google.com/macros/s/AKfycbw-cMWZJlq1H7Vhy6Tgf8jglLsPYvLIpXV5ypr69lP5D6VN6fH4zuGcxGKIr8IdTbkz/exec';
 
 function activate(){
   var email=document.getElementById('actEmail').value.trim().toLowerCase();
@@ -1157,37 +1157,48 @@ function activate(){
   var btn=document.querySelector('#screenActivation .btn-primary');
   var es=lang==='es';
   if(!email){errEl.style.display='block';errEl.textContent=es?'Ingresa tu correo.':'Enter your email.';return;}
-  // Mostrar cargando
   btn.textContent=es?'Verificando...':'Checking...';
   btn.disabled=true;
-  // JSONP para evitar CORS con Google Apps Script
+
   var cbName='fhcb'+Date.now();
-  var script=document.createElement('script');
-  script.src=GAS_URL+'?email='+encodeURIComponent(email)+'&callback='+cbName;
-  script.onerror=function(){
-    btn.textContent=es?'Entrar':'Enter';
-    btn.disabled=false;
-    errEl.style.display='block';
-    errEl.textContent=es?'Error de conexión. Intenta de nuevo.':'Connection error. Please try again.';
-    document.body.removeChild(script);
-  };
-  window[cbName]=function(data){
-    btn.textContent=es?'Entrar':'Enter';
-    btn.disabled=false;
+  var timer=null;
+  var done=false;
+
+  function cleanup(){
+    done=true;
+    clearTimeout(timer);
+    try{var old=document.getElementById(cbName);if(old)document.head.removeChild(old);}catch(e){}
     delete window[cbName];
-    document.body.removeChild(script);
-    if(data.authorized){
+    btn.textContent=es?'Entrar':'Enter';
+    btn.disabled=false;
+  }
+
+  window[cbName]=function(data){
+    if(done)return;
+    cleanup();
+    if(data&&data.authorized){
       doLogin(email);
     } else {
       errEl.style.display='block';
-      if(data.reason==='inactive'){
-        errEl.textContent=es?'Tu acceso está inactivo. Contacta a soporte.':'Your access is inactive. Contact support.';
+      if(data&&data.reason==='inactive'){
+        errEl.textContent=es?'Tu acceso esta inactivo. Escribe a finanzone59@gmail.com':'Your access is inactive. Email finanzone59@gmail.com';
       } else {
-        errEl.textContent=es?'Correo no autorizado. ¿Ya compraste en Etsy?':'Email not authorized. Did you purchase on Etsy?';
+        errEl.textContent=es?'Correo no autorizado. Ya compraste en Etsy?':'Email not authorized. Did you purchase on Etsy?';
       }
     }
   };
-  document.body.appendChild(script);
+
+  timer=setTimeout(function(){
+    if(done)return;
+    cleanup();
+    errEl.style.display='block';
+    errEl.textContent=es?'Error de conexion. Intenta de nuevo.':'Connection error. Please try again.';
+  },10000);
+
+  var sc=document.createElement('script');
+  sc.id=cbName;
+  sc.src=GAS_URL+'?email='+encodeURIComponent(email)+'&callback='+cbName;
+  document.head.appendChild(sc);
 }
 
 function doLogin(email){
