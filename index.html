@@ -404,12 +404,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <div class="act-card">
     <div class="act-logo">🏠</div>
     <div class="act-appname">Fin<span>Home</span></div>
-    <div class="act-sub" data-lang="act_sub">Ingresa tu correo y el código de activación que recibiste.</div>
+    <div class="act-sub" data-lang="act_sub">Ingresa el correo con el que compraste en Etsy para acceder.</div>
     <input class="act-input" id="actEmail" type="email" placeholder="tucorreo@email.com">
-    <input class="act-input code-input" id="actCode" type="text" placeholder="FHXX-XXXX-XXXX" maxlength="14" oninput="formatCode(this)">
-    <button class="btn-primary" onclick="activate()" data-lang="act_btn">Activar</button>
-    <div class="act-error" id="actError">Código inválido o ya utilizado en 2 dispositivos.</div>
-    <div class="act-note" data-lang="act_note">El código activa hasta 2 dispositivos. Guárdalo en un lugar seguro.</div>
+    <button class="btn-primary" onclick="activate()" data-lang="act_btn">Entrar</button>
+    <div class="act-error" id="actError">Correo no autorizado. Compra en Etsy para obtener acceso.</div>
+    <div class="act-note" data-lang="act_note">¿Aún no tienes acceso? <a href="https://www.etsy.com" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">Comprar en Etsy →</a></div>
   </div>
 </div>
 
@@ -1056,9 +1055,9 @@ function applyLang(){
     auto_tip_title: es?'Auto-detección':'Auto-detection',
     auto_tip_desc: es?'Puedes poner % anual (ej: 2.62) o monto anual $ (ej: 3500). La app detecta cuál es y calcula el pago mensual automáticamente.':'You can enter annual % (e.g. 2.62) or annual $ amount (e.g. 3500). The app detects which one and calculates the monthly payment automatically.',
     per_mes: es?'/mes':'/mo',
-    act_sub: es?'Ingresa tu correo y el código de activación que recibiste.':'Enter your email and the activation code you received.',
-    act_btn: es?'Activar':'Activate',
-    act_note: es?'El código activa hasta 2 dispositivos. Guárdalo en un lugar seguro.':'The code activates up to 2 devices. Keep it in a safe place.',
+    act_sub: es?'Ingresa el correo con el que compraste en Etsy para acceder.':'Enter the email you used to purchase on Etsy.',
+    act_btn: es?'Entrar':'Enter',
+    act_note: es?'¿Aún no tienes acceso? Comprar en Etsy →':'No access yet? Buy on Etsy →',
   };
   // Apply all translations to data-lang elements
   document.querySelectorAll('[data-lang]').forEach(function(el){
@@ -1150,23 +1149,49 @@ function getValidCodes(){try{var s=localStorage.getItem('fh_valid_codes');if(s)r
 
 function formatCode(el){var v=el.value.replace(/[^A-Z0-9a-z]/g,'').toUpperCase();el.value=[v.slice(0,4),v.slice(4,8),v.slice(8,12)].filter(Boolean).join('-');}
 
+var GAS_URL='https://script.google.com/macros/s/AKfycbzFCot66iPgkMHTd80fdfUKvpmxu2WN8yrs-mQjQjgZnIjO2Dpmg0mZmLjUjlvFX-9J/exec';
+
 function activate(){
   var email=document.getElementById('actEmail').value.trim().toLowerCase();
-  var code=document.getElementById('actCode').value.trim().toUpperCase();
   var errEl=document.getElementById('actError');errEl.style.display='none';
-  if(!email||!code){errEl.style.display='block';errEl.textContent='Completa todos los campos.';return;}
-  var vc=getValidCodes();
-  if(vc.indexOf(code)===-1){errEl.style.display='block';errEl.textContent='Código inválido o ya usado en 2 dispositivos.';return;}
-  var reg=getRegistry();if(!reg[code])reg[code]={devices:[],emails:[]};
-  var entry=reg[code],deviceId=getDeviceId();
-  if(entry.devices.indexOf(deviceId)!==-1){doLogin(email,code);return;}
-  if(entry.devices.length>=2){errEl.style.display='block';errEl.textContent='Código ya usado en 2 dispositivos.';return;}
-  entry.devices.push(deviceId);if(entry.emails.indexOf(email)===-1)entry.emails.push(email);
-  saveRegistry(reg);doLogin(email,code);
+  var btn=document.querySelector('#screenActivation .btn-primary');
+  var es=lang==='es';
+  if(!email){errEl.style.display='block';errEl.textContent=es?'Ingresa tu correo.':'Enter your email.';return;}
+  // Mostrar cargando
+  btn.textContent=es?'Verificando...':'Checking...';
+  btn.disabled=true;
+  // JSONP para evitar CORS con Google Apps Script
+  var cbName='fhcb'+Date.now();
+  var script=document.createElement('script');
+  script.src=GAS_URL+'?email='+encodeURIComponent(email)+'&callback='+cbName;
+  script.onerror=function(){
+    btn.textContent=es?'Entrar':'Enter';
+    btn.disabled=false;
+    errEl.style.display='block';
+    errEl.textContent=es?'Error de conexión. Intenta de nuevo.':'Connection error. Please try again.';
+    document.body.removeChild(script);
+  };
+  window[cbName]=function(data){
+    btn.textContent=es?'Entrar':'Enter';
+    btn.disabled=false;
+    delete window[cbName];
+    document.body.removeChild(script);
+    if(data.authorized){
+      doLogin(email);
+    } else {
+      errEl.style.display='block';
+      if(data.reason==='inactive'){
+        errEl.textContent=es?'Tu acceso está inactivo. Contacta a soporte.':'Your access is inactive. Contact support.';
+      } else {
+        errEl.textContent=es?'Correo no autorizado. ¿Ya compraste en Etsy?':'Email not authorized. Did you purchase on Etsy?';
+      }
+    }
+  };
+  document.body.appendChild(script);
 }
 
-function doLogin(email,code){
-  localStorage.setItem('fh_session',JSON.stringify({email:email,code:code,deviceId:getDeviceId()}));
+function doLogin(email){
+  localStorage.setItem('fh_session',JSON.stringify({email:email,deviceId:getDeviceId()}));
   var hasEmailData=!!localStorage.getItem('fh_data_'+emailKey(email));
   var hasOldData=!!localStorage.getItem('fh_data');
   var isNew=!hasEmailData&&!hasOldData;
@@ -1189,7 +1214,7 @@ function loadAndShow(email){
 
 function checkSession(){
   var s=localStorage.getItem('fh_session');
-  if(s){try{var sess=JSON.parse(s);if(sess&&sess.code&&sess.deviceId===getDeviceId()){loadAndShow(sess.email);return;}}catch(e){}}
+  if(s){try{var sess=JSON.parse(s);if(sess&&sess.email&&sess.deviceId===getDeviceId()){loadAndShow(sess.email);return;}}catch(e){}}
   showScreen('screenActivation');
 }
 
