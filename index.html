@@ -1257,10 +1257,10 @@ function renderOnboarding(){
   se.innerHTML='<div class="ob-icon">'+s.icon+'</div><div class="ob-title">'+s.title+'</div><div class="ob-desc">'+s.desc+'</div>';
   de.innerHTML='';
   obStepsData.forEach(function(_,i){var d=document.createElement('div');d.className='ob-dot'+(i===obCurrent?' active':'');de.appendChild(d);});
-  var btn=document.getElementById('obNextBtn');if(btn)btn.textContent=obCurrent===obStepsData.length-1?'Comenzar!':'Siguiente ->';
+  var btn=document.getElementById('obNextBtn');if(btn)btn.textContent=obCurrent===obStepsData.length-1?(lang==='es'?'Comenzar!':'Get started!'):(lang==='es'?'Siguiente ->':'Next ->');
 }
 function obNext(){obStepsData=getObSteps();if(obCurrent<obStepsData.length-1){obCurrent++;renderOnboarding();}else finishOnboarding();}
-function finishOnboarding(){var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');loadAndShow(sess.email||'');}
+function finishOnboarding(){var sess=JSON.parse(localStorage.getItem('fh_session')||'{}');loadAndShow(sess.email||'');applyLang();}
 
 // ---- STATE ----
 var state={members:[],passive:[],necesidades:[],deseos:[],ahorros:[],nid:100};
@@ -1853,7 +1853,7 @@ function renderMembersList(){
     row.innerHTML=
       '<div class="member-avatar">'+initial+'</div>'+
       '<input class="member-name-input" value="'+m.name+'" data-mid="'+m.id+'" placeholder="Nombre...">'+
-      '<span class="member-income-badge">'+fmt(Number(m.weekly||0)*4.33)+'/mes</span>'+
+      '<span class="member-income-badge">'+fmt(Number(m.weekly||0)*4.33)+(lang==='es'?'/mes':'/mo')+'</span>'+
       '<button class="btn-del" data-delm="'+m.id+'">x</button>';
     el.appendChild(row);
   });
@@ -2056,8 +2056,8 @@ function updateProjection(){
   var tempDebt=getTempDebtTotal();
   var simPayment=simMonths>0?tempDebt/simMonths:0;  // how much to pay per month total
   var simSob=sob+simPayment;                        // surplus after debts are cleared at that rate
-  var payEl=document.getElementById('projSimPayment');if(payEl)payEl.textContent=fmt(simPayment)+'/mes';
-  var simEl=document.getElementById('projSim');if(simEl)simEl.textContent=fmt(sob+getTempMonthly())+'/mes';
+  var payEl=document.getElementById('projSimPayment');if(payEl)payEl.textContent=fmt(simPayment)+(lang==='es'?'/mes':'/mo');
+  var simEl=document.getElementById('projSim');if(simEl)simEl.textContent=fmt(sob+getTempMonthly())+(lang==='es'?'/mes':'/mo');
   var lbl=document.getElementById('projAfterLbl');if(lbl)lbl.textContent='Al liquidar';
 }
 document.getElementById('projMonths').addEventListener('input',function(){updateProjection();});
@@ -2327,9 +2327,10 @@ function updateMonthsModal(total){
   document.getElementById('monthsModalVal').textContent=v;
   var perMonth=v>0?total/v:0;
   var perWeek=perMonth/4.33;
+  var isEs=lang==='es';
   document.getElementById('monthsModalCalc').innerHTML=
-    '<strong>'+fmt(perMonth)+'/mes</strong> &nbsp;-&nbsp; '+fmtD(perWeek)+'/sem<br>'+
-    '<span style="font-size:12px;color:var(--text3)">Total deuda: '+fmt(total)+'</span>';
+    '<strong>'+fmt(perMonth)+(isEs?'/mes':'/mo')+'</strong> &nbsp;-&nbsp; '+fmtD(perWeek)+(isEs?'/sem':'/wk')+'<br>'+
+    '<span style="font-size:12px;color:var(--text3)">'+(isEs?'Total deuda: ':'Total debt: ')+fmt(total)+'</span>';
 }
 function adjustMonths(delta){
   _monthsCtx.val=Math.max(1,Math.min(120,_monthsCtx.val+delta));
